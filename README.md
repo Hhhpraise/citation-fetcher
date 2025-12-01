@@ -7,7 +7,6 @@
 [![GitHub Issues](https://img.shields.io/github/issues/Hhhpraise/citation-fetcher)](https://github.com/Hhhpraise/citation-fetcher/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/Hhhpraise/citation-fetcher)](https://github.com/Hhhpraise/citation-fetcher/stargazers)
 
-![Citation Fetcher Screenshot](screenshot.png)
 
 ## ✨ Features
 
