@@ -11,8 +11,4 @@ A Python tool to automatically fetch BibTeX citations for academic papers from C
 - 📁 **Batch processing**: Process multiple papers from a text file
 - 🎯 **Smart matching**: Cleans and normalizes titles for better search results
 
-## Installation
 
-### Using pip
-```bash
-pip install -r requirements.txt
