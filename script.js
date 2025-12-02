@@ -1583,7 +1583,7 @@ function initInstallPrompt() {
 
 
 // ===========================
-// QR CODE PAYMENT FUNCTIONALITY
+// QR CODE PAYMENT FUNCTIONALITY - OPTIMIZED FOR MOBILE
 // ===========================
 
 function initQRPayment() {
@@ -1591,142 +1591,134 @@ function initQRPayment() {
     const donateBtn = document.getElementById('donateBtn');
     const closeQRBtn = document.getElementById('closeQR');
     const enlargeModal = document.getElementById('enlargeModal');
-    const closeEnlargeBtn = document.getElementById('closeEnlarge');
-    const closeEnlargeBtn2 = document.getElementById('closeEnlargeBtn');
-    const showQRCodeAnywayBtn = document.getElementById('showQRCodeAnyway');
-    const appDetection = document.getElementById('appDetection');
-    const qrDisplay = document.getElementById('qrDisplay');
 
-    // Check if device is mobile
+    // Mobile detection and optimization
     function isMobileDevice() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
-    // Check if device is iOS
-    function isIOS() {
-        return /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    }
-
-    // Check if device is Android
-    function isAndroid() {
-        return /Android/i.test(navigator.userAgent);
-    }
-
-    // Check if WeChat browser
-    function isWeChatBrowser() {
+    function isWeChat() {
         return /MicroMessenger/i.test(navigator.userAgent);
     }
 
-    // Check if Alipay browser
-    function isAlipayBrowser() {
+    function isAlipay() {
         return /AlipayClient/i.test(navigator.userAgent);
     }
 
-    // Open Alipay app with deep link
-    function openAlipay() {
-        // Alipay deep link format
-        const alipayLink = "alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount=&userId=YOUR_ALIPAY_ID&memo=Support%20Citation%20Fetcher";
+    // Enhanced deep links for mobile apps
+    function getAlipayDeepLink() {
+        // Alipay deep link format for payment
+        // Use your actual Alipay payment link or user ID
+        const alipayUserId = "18640447460"; // Replace with your actual Alipay ID
+        return `alipayqr://platformapi/startapp?saId=10000007&qrcode=https://qr.alipay.com/${alipayUserId}`;
+    }
 
-        // Try to open Alipay app
-        window.location.href = alipayLink;
+    function getWeChatDeepLink() {
+        // WeChat deep link for adding contact (with your WeChat ID)
+        const wechatId = "hhhpraise"; // Replace with your actual WeChat ID
+        return `weixin://dl/business/?ticket=${wechatId}`;
+    }
 
-        // If app doesn't open, fallback after delay
-        setTimeout(() => {
-            if (document.hasFocus()) {
-                // App didn't open, show QR code
-                showAppDetection('Alipay app not detected. Showing QR code...');
-                setTimeout(() => {
-                    hideAppDetection();
-                }, 2000);
+    // Open Alipay for payment
+    function openAlipayPayment() {
+        if (isMobileDevice()) {
+            if (isAlipay()) {
+                // Already in Alipay app
+                showToast('You are in Alipay! Use scan feature', 'info');
+                return;
             }
-        }, 500);
+
+            // Try to open Alipay app
+            const alipayLink = getAlipayDeepLink();
+            const timeout = setTimeout(() => {
+                showToast('Opening Alipay app...', 'info');
+            }, 100);
+
+            window.location.href = alipayLink;
+
+            // Fallback to QR code if app doesn't open
+            setTimeout(() => {
+                clearTimeout(timeout);
+                if (document.hasFocus()) {
+                    showToast('Please scan the QR code in Alipay app', 'info');
+                    // Switch to Alipay QR tab
+                    document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('active'));
+                    document.querySelector('.payment-option[data-payment="alipay"]').classList.add('active');
+                    document.querySelectorAll('.qr-section').forEach(section => section.classList.remove('active'));
+                    document.getElementById('alipaySection').classList.add('active');
+                }
+            }, 2000);
+        } else {
+            showToast('Please use mobile device to pay', 'warning');
+        }
     }
 
-    // Open WeChat app with deep link
-    function openWeChat() {
-        // WeChat deep link format (payment link)
-        const wechatLink = "weixin://scanqrcode";
-
-        // Try to open WeChat app
-        window.location.href = wechatLink;
-
-        // If app doesn't open, fallback after delay
-        setTimeout(() => {
-            if (document.hasFocus()) {
-                // App didn't open, show QR code
-                showAppDetection('WeChat app not detected. Showing QR code...');
-                setTimeout(() => {
-                    hideAppDetection();
-                }, 2000);
+    // Open WeChat for adding contact
+    function openWeChatAdd() {
+        if (isMobileDevice()) {
+            if (isWeChat()) {
+                // Already in WeChat app
+                showToast('You are in WeChat! Use scan feature', 'info');
+                return;
             }
-        }, 500);
+
+            // Try to open WeChat app
+            const wechatLink = getWeChatDeepLink();
+            const timeout = setTimeout(() => {
+                showToast('Opening WeChat app...', 'info');
+            }, 100);
+
+            window.location.href = wechatLink;
+
+            // Fallback to QR code if app doesn't open
+            setTimeout(() => {
+                clearTimeout(timeout);
+                if (document.hasFocus()) {
+                    showToast('Please scan the QR code in WeChat app', 'info');
+                    // Switch to WeChat QR tab
+                    document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('active'));
+                    document.querySelector('.payment-option[data-payment="wechat"]').classList.add('active');
+                    document.querySelectorAll('.qr-section').forEach(section => section.classList.remove('active'));
+                    document.getElementById('wechatSection').classList.add('active');
+                }
+            }, 2000);
+        } else {
+            showToast('Please use mobile device', 'warning');
+        }
     }
 
-    // Show app detection screen
-    function showAppDetection(message = 'Opening payment app...') {
-        appDetection.classList.remove('hidden');
-        document.getElementById('detectionMessage').textContent = message;
-    }
-
-    // Hide app detection screen
-    function hideAppDetection() {
-        appDetection.classList.add('hidden');
-    }
-
-    // Show QR code modal with smart behavior
+    // Optimized modal display for mobile
     function showQRModal() {
         qrModal.classList.remove('hidden');
 
-        // Track donation click
-        trackEvent('donation_modal_opened');
-
-        // If mobile, try to detect payment apps
-        if (isMobileDevice()) {
-            // Check if already in WeChat or Alipay browser
-            if (isWeChatBrowser()) {
-                showAppDetection('You are in WeChat! Showing WeChat payment...');
-                setTimeout(() => {
-                    hideAppDetection();
-                    switchToWeChat();
-                }, 1000);
-                return;
+        // Auto-detect and show appropriate payment method
+        if (isWeChat()) {
+            // User is in WeChat browser
+            switchToWeChat();
+            showToast('WeChat detected!', 'info');
+        } else if (isAlipay()) {
+            // User is in Alipay browser
+            switchToAlipay();
+            showToast('Alipay detected!', 'info');
+        } else if (isMobileDevice()) {
+            // On mobile but not in WeChat/Alipay
+            // Check user language preference for Chinese users
+            const isChineseUser = navigator.language.startsWith('zh') ||
+                                 navigator.language.includes('CN');
+            if (isChineseUser) {
+                switchToWeChat();
+            } else {
+                switchToAlipay();
             }
-
-            if (isAlipayBrowser()) {
-                showAppDetection('You are in Alipay! Showing Alipay payment...');
-                setTimeout(() => {
-                    hideAppDetection();
-                    switchToAlipay();
-                }, 1000);
-                return;
-            }
-
-            // Check iOS/Android and try appropriate app
-            if (isIOS()) {
-                // iOS users might have both apps
-                showAppDetection('Detected iOS device. Opening payment options...');
-                setTimeout(() => {
-                    hideAppDetection();
-                }, 1500);
-            } else if (isAndroid()) {
-                // Android users might have both apps
-                showAppDetection('Detected Android device. Opening payment options...');
-                setTimeout(() => {
-                    hideAppDetection();
-                }, 1500);
-            }
+        } else {
+            // Desktop user - default to Alipay
+            switchToAlipay();
         }
 
-        // Default: Show QR codes
-        hideAppDetection();
+        // Announce for screen readers
+        announceToScreenReader('Payment options modal opened');
     }
 
-    // Close QR modal
-    function closeQRModal() {
-        qrModal.classList.add('hidden');
-    }
-
-    // Switch to Alipay tab
     function switchToAlipay() {
         document.querySelectorAll('.payment-option').forEach(opt => {
             opt.classList.remove('active');
@@ -1739,7 +1731,6 @@ function initQRPayment() {
         document.getElementById('alipaySection').classList.add('active');
     }
 
-    // Switch to WeChat tab
     function switchToWeChat() {
         document.querySelectorAll('.payment-option').forEach(opt => {
             opt.classList.remove('active');
@@ -1752,82 +1743,26 @@ function initQRPayment() {
         document.getElementById('wechatSection').classList.add('active');
     }
 
-    // Enlarge QR code
-    function enlargeQR(paymentType) {
-        const enlargeModal = document.getElementById('enlargeModal');
-        const enlargedQR = document.getElementById('enlargedQR');
-        const enlargeTitle = document.getElementById('enlargeTitle');
-
-        if (paymentType === 'alipay') {
-            enlargedQR.src = 'images/donate/alipay-qr.png';
-            enlargeTitle.innerHTML = '<i class="fab fa-alipay"></i> Alipay QR Code';
-        } else {
-            enlargedQR.src = 'images/donate/wechat-qr.png';
-            enlargeTitle.innerHTML = '<i class="fab fa-weixin"></i> WeChat QR Code';
-        }
-
-        enlargeModal.classList.remove('hidden');
-    }
-
-    // Save QR code
-    function saveQRCode(paymentType) {
-        const qrImage = paymentType === 'alipay' ?
-            document.querySelector('#alipaySection .qr-image') :
-            document.querySelector('#wechatSection .qr-image');
-
-        if (!qrImage || !qrImage.src) {
-            showToast('QR code image not found', 'error');
-            return;
-        }
-
-        // Create temporary link to download
-        const link = document.createElement('a');
-        link.href = qrImage.src;
-        link.download = `citation-fetcher-${paymentType}-qr.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showToast('QR code saved to downloads!', 'success');
-        trackEvent('qr_code_saved', { type: paymentType });
-    }
-
-    // Copy payment link to clipboard
-    function copyPaymentLink(paymentType) {
-        let link = '';
-        let message = '';
-
-        if (paymentType === 'alipay') {
-            link = 'alipays://platformapi/startapp?appId=09999988&actionType=toAccount&userId=YOUR_ALIPAY_ID';
-            message = 'Alipay payment link copied!';
-        } else {
-            link = 'weixin://wxpay/bizpayurl?pr=YOUR_WECHAT_TRANSACTION_ID';
-            message = 'WeChat payment link copied!';
-        }
-
-        navigator.clipboard.writeText(link).then(() => {
-            showToast(message, 'success');
-            trackEvent('payment_link_copied', { type: paymentType });
-        }).catch(err => {
-            console.error('Failed to copy:', err);
-            showToast('Failed to copy link', 'error');
-        });
-    }
-
     // Event Listeners
     if (donateBtn) {
         donateBtn.addEventListener('click', showQRModal);
     }
 
     if (closeQRBtn) {
-        closeQRBtn.addEventListener('click', closeQRModal);
+        closeQRBtn.addEventListener('click', () => {
+            qrModal.classList.add('hidden');
+        });
     }
 
     qrModal.addEventListener('click', (e) => {
         if (e.target === qrModal) {
-            closeQRModal();
+            qrModal.classList.add('hidden');
         }
     });
+
+    // Open app buttons
+    document.getElementById('openAlipay')?.addEventListener('click', openAlipayPayment);
+    document.getElementById('openWeChat')?.addEventListener('click', openWeChatAdd);
 
     // Payment option switching
     document.querySelectorAll('.payment-option').forEach(option => {
@@ -1845,62 +1780,39 @@ function initQRPayment() {
                 section.classList.remove('active');
             });
             document.getElementById(`${paymentType}Section`).classList.add('active');
-
-            trackEvent('payment_option_switched', { type: paymentType });
         });
     });
 
-    // QR image click to enlarge
+    // QR code enlargement
     document.querySelectorAll('.qr-image-container').forEach(container => {
         container.addEventListener('click', (e) => {
             const parentSection = container.closest('.qr-section');
             const paymentType = parentSection.id === 'alipaySection' ? 'alipay' : 'wechat';
-            enlargeQR(paymentType);
+
+            const enlargeModal = document.getElementById('enlargeModal');
+            const enlargedQR = document.getElementById('enlargedQR');
+            const enlargeTitle = document.getElementById('enlargeTitle');
+
+            if (paymentType === 'alipay') {
+                enlargedQR.src = 'images/donate/alipay-qr.png';
+                enlargeTitle.innerHTML = '<i class="fab fa-alipay"></i> Alipay QR Code';
+            } else {
+                enlargedQR.src = 'images/donate/wechat-qr.png';
+                enlargeTitle.innerHTML = '<i class="fab fa-weixin"></i> WeChat QR Code';
+            }
+
+            enlargeModal.classList.remove('hidden');
         });
     });
 
-    // Open app buttons
-    document.getElementById('openAlipay')?.addEventListener('click', () => {
-        trackEvent('open_alipay_clicked');
-        openAlipay();
+    // Close enlargement modal
+    document.getElementById('closeEnlarge')?.addEventListener('click', () => {
+        enlargeModal.classList.add('hidden');
     });
 
-    document.getElementById('openWeChat')?.addEventListener('click', () => {
-        trackEvent('open_wechat_clicked');
-        openWeChat();
+    document.getElementById('closeEnlargeBtn')?.addEventListener('click', () => {
+        enlargeModal.classList.add('hidden');
     });
-
-    // Show QR code anyway
-    if (showQRCodeAnywayBtn) {
-        showQRCodeAnywayBtn.addEventListener('click', () => {
-            hideAppDetection();
-        });
-    }
-
-    // Save QR code button
-    document.getElementById('saveQR')?.addEventListener('click', () => {
-        const activePayment = document.querySelector('.payment-option.active').dataset.payment;
-        saveQRCode(activePayment);
-    });
-
-    // Copy payment link button
-    document.getElementById('copyPaymentLink')?.addEventListener('click', () => {
-        const activePayment = document.querySelector('.payment-option.active').dataset.payment;
-        copyPaymentLink(activePayment);
-    });
-
-    // Enlargement modal controls
-    if (closeEnlargeBtn) {
-        closeEnlargeBtn.addEventListener('click', () => {
-            enlargeModal.classList.add('hidden');
-        });
-    }
-
-    if (closeEnlargeBtn2) {
-        closeEnlargeBtn2.addEventListener('click', () => {
-            enlargeModal.classList.add('hidden');
-        });
-    }
 
     enlargeModal.addEventListener('click', (e) => {
         if (e.target === enlargeModal) {
@@ -1908,77 +1820,35 @@ function initQRPayment() {
         }
     });
 
-    // Download enlarged QR code
-    document.getElementById('downloadEnlarged')?.addEventListener('click', () => {
-        const enlargedQR = document.getElementById('enlargedQR');
-        if (!enlargedQR.src) return;
+    // Save QR code
+    document.getElementById('saveQR')?.addEventListener('click', () => {
+        const activePayment = document.querySelector('.payment-option.active').dataset.payment;
+        const qrImage = activePayment === 'alipay'
+            ? document.querySelector('#alipaySection .qr-image')
+            : document.querySelector('#wechatSection .qr-image');
 
-        const link = document.createElement('a');
-        link.href = enlargedQR.src;
-        link.download = `citation-fetcher-qr-large.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showToast('Large QR code saved!', 'success');
-        enlargeModal.classList.add('hidden');
+        if (qrImage && qrImage.src) {
+            const link = document.createElement('a');
+            link.href = qrImage.src;
+            link.download = `citation-fetcher-${activePayment}-qr.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('QR code saved!', 'success');
+        }
     });
 
     // Keyboard shortcuts for modal
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             if (!qrModal.classList.contains('hidden')) {
-                closeQRModal();
+                qrModal.classList.add('hidden');
             }
             if (!enlargeModal.classList.contains('hidden')) {
                 enlargeModal.classList.add('hidden');
             }
         }
-
-        // Tab switching with keyboard
-        if (!qrModal.classList.contains('hidden')) {
-            if (e.key === '1' || e.key === 'a') {
-                switchToAlipay();
-            } else if (e.key === '2' || e.key === 'w') {
-                switchToWeChat();
-            }
-        }
     });
-
-    // Auto-switch based on user agent
-    function autoDetectPaymentMethod() {
-        if (isWeChatBrowser()) {
-            switchToWeChat();
-        } else if (isAlipayBrowser()) {
-            switchToAlipay();
-        } else if (isMobileDevice()) {
-            // On mobile, default to WeChat for China
-            const isChineseUser = navigator.language.startsWith('zh') ||
-                                 /zh-CN|zh-TW|zh-HK/i.test(navigator.language) ||
-                                 /China|Chinese/i.test(navigator.userAgent);
-
-            if (isChineseUser) {
-                switchToWeChat();
-            } else {
-                // Non-Chinese mobile users might prefer Alipay
-                switchToAlipay();
-            }
-        } else {
-            // Desktop users default to Alipay
-            switchToAlipay();
-        }
-    }
-
-    // Run auto-detection when modal opens
-    qrModal.addEventListener('modalOpen', autoDetectPaymentMethod);
-
-    // Return public methods if needed
-    return {
-        showQRModal,
-        closeQRModal,
-        openAlipay,
-        openWeChat
-    };
 }
 
 // Initialize when DOM loads

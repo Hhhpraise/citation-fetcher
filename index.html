@@ -790,104 +790,91 @@ Examples:
 <div class="modal hidden" id="qrModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fas fa-qrcode"></i> Support via QR Code</h3>
+            <h3><i class="fas fa-qrcode"></i> Support Developer</h3>
             <button class="modal-close" id="closeQR">&times;</button>
         </div>
         <div class="modal-body">
-            <!-- Mobile App Detection -->
-            <div class="app-detection hidden" id="appDetection">
-                <div class="detection-content">
-                    <i class="fas fa-mobile-alt"></i>
-                    <div>
-                        <h4>Opening Payment App...</h4>
-                        <p id="detectionMessage">Attempting to open payment app...</p>
-                        <button class="btn-outline" id="showQRCodeAnyway">Show QR Code Instead</button>
+            <div class="payment-options">
+                <button class="payment-option active" data-payment="alipay">
+                    <i class="fab fa-alipay"></i>
+                    <span>Alipay (Payment)</span>
+                </button>
+                <button class="payment-option" data-payment="wechat">
+                    <i class="fab fa-weixin"></i>
+                    <span>WeChat (Add Contact)</span>
+                </button>
+            </div>
+
+            <div class="qr-content">
+                <!-- Alipay QR -->
+                <div class="qr-section active" id="alipaySection">
+                    <div class="qr-image-container">
+                        <img src="images/donate/alipay-qr.png" alt="Alipay QR Code for payment" class="qr-image">
+                        <div class="qr-overlay">
+                            <i class="fas fa-expand-alt"></i>
+                            <span>Click to enlarge</span>
+                        </div>
+                    </div>
+                    <div class="qr-instructions">
+                        <h5><i class="fab fa-alipay"></i> Alipay Payment</h5>
+                        <ol>
+                            <li><strong>Option A:</strong> Click "Open Alipay" button below</li>
+                            <li><strong>Option B:</strong> Open Alipay app → Scan → Point at QR code</li>
+                            <li>Enter any amount (every bit helps!)</li>
+                            <li>Add note: <code>Support Citation Fetcher</code></li>
+                        </ol>
+                        <div class="qr-mobile-action">
+                            <button class="btn-primary" id="openAlipay">
+                                <i class="fab fa-alipay"></i> Open Alipay App
+                            </button>
+                        </div>
+                        <p class="mobile-note">
+                            <i class="fas fa-mobile-alt"></i>
+                            On mobile? The app will open automatically
+                        </p>
+                    </div>
+                </div>
+
+                <!-- WeChat QR -->
+                <div class="qr-section" id="wechatSection">
+                    <div class="qr-image-container">
+                        <img src="images/donate/wechat-qr.png" alt="WeChat QR Code to add developer" class="qr-image">
+                        <div class="qr-overlay">
+                            <i class="fas fa-expand-alt"></i>
+                            <span>Click to enlarge</span>
+                        </div>
+                    </div>
+                    <div class="qr-instructions">
+                        <h5><i class="fab fa-weixin"></i> WeChat Contact</h5>
+                        <ol>
+                            <li><strong>Option A:</strong> Click "Open WeChat" button below</li>
+                            <li><strong>Option B:</strong> Open WeChat app → Scan → Point at QR code</li>
+                            <li>Add me as contact</li>
+                            <li>Send message: <code>Support developer</code></li>
+                            <li>I'll provide payment options</li>
+                        </ol>
+                        <div class="qr-mobile-action">
+                            <button class="btn-primary" id="openWeChat">
+                                <i class="fab fa-weixin"></i> Open WeChat App
+                            </button>
+                        </div>
+                        <p class="mobile-note">
+                            <i class="fas fa-mobile-alt"></i>
+                            On mobile? The app will open automatically
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- QR Code Display -->
-            <div class="qr-display" id="qrDisplay">
-                <div class="payment-options">
-                    <div class="payment-option active" data-payment="alipay">
-                        <i class="fab fa-alipay"></i>
-                        <span>Alipay</span>
-                    </div>
-                    <div class="payment-option" data-payment="wechat">
-                        <i class="fab fa-weixin"></i>
-                        <span>WeChat</span>
-                    </div>
+            <div class="qr-footer">
+                <div class="support-note">
+                    <i class="fas fa-heart"></i>
+                    <span>Your support helps improve Citation Fetcher for everyone!</span>
                 </div>
-
-                <div class="qr-content">
-                    <!-- Alipay QR -->
-                    <div class="qr-section active" id="alipaySection">
-                        <div class="qr-image-container">
-                            <img src="images/donate/alipay-qr.png" alt="Alipay QR Code" class="qr-image">
-                            <div class="qr-overlay">
-                                <i class="fas fa-expand-alt"></i>
-                                <span>Click to enlarge</span>
-                            </div>
-                        </div>
-                        <div class="qr-instructions">
-                            <h5><i class="fab fa-alipay"></i> Alipay Instructions</h5>
-                            <ol>
-                                <li>Open <strong>Alipay app</strong> on your phone</li>
-                                <li>Tap <strong>"Scan"</strong> (扫一扫)</li>
-                                <li>Point camera at this QR code</li>
-                                <li>Enter amount (any amount is appreciated!)</li>
-                                <li>Add message: <code>Support Citation Fetcher</code></li>
-                                <li>Complete payment</li>
-                            </ol>
-                            <div class="qr-mobile-action">
-                                <button class="btn-primary" id="openAlipay">
-                                    <i class="fab fa-alipay"></i> Open Alipay App
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- WeChat QR -->
-                    <div class="qr-section" id="wechatSection">
-                        <div class="qr-image-container">
-                            <img src="images/donate/wechat-qr.png" alt="WeChat QR Code" class="qr-image">
-                            <div class="qr-overlay">
-                                <i class="fas fa-expand-alt"></i>
-                                <span>Click to enlarge</span>
-                            </div>
-                        </div>
-                        <div class="qr-instructions">
-                            <h5><i class="fab fa-weixin"></i> WeChat Instructions</h5>
-                            <ol>
-                                <li>Open <strong>WeChat app</strong> on your phone</li>
-                                <li>Go to <strong>"Me" → "Wallet" → "Money"</strong></li>
-                                <li>Tap <strong>"Scan"</strong> (扫一扫)</li>
-                                <li>Scan this QR code with camera</li>
-                                <li>Enter any amount you'd like to send</li>
-                                <li>Add note: <code>Support developer</code></li>
-                            </ol>
-                            <div class="qr-mobile-action">
-                                <button class="btn-primary" id="openWeChat">
-                                    <i class="fab fa-weixin"></i> Open WeChat App
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="qr-footer">
-                    <div class="support-note">
-                        <i class="fas fa-heart"></i>
-                        <span>Your support helps improve Citation Fetcher for everyone!</span>
-                    </div>
-                    <div class="qr-actions">
-                        <button class="btn-outline" id="saveQR">
-                            <i class="fas fa-download"></i> Save QR Code
-                        </button>
-                        <button class="btn-outline" id="copyPaymentLink">
-                            <i class="fas fa-copy"></i> Copy Payment Link
-                        </button>
-                    </div>
+                <div class="qr-actions">
+                    <button class="btn-outline" id="saveQR">
+                        <i class="fas fa-download"></i> Save QR Code
+                    </button>
                 </div>
             </div>
         </div>

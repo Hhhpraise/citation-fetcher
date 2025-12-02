@@ -2542,3 +2542,132 @@ select:focus,
     opacity: 0.5;
     pointer-events: none;
 }
+/* ===========================
+   MOBILE QR CODE OPTIMIZATION
+   =========================== */
+
+/* Mobile-specific QR modal */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+        margin: 10px;
+    }
+
+    .qr-content {
+        flex-direction: column;
+    }
+
+    .qr-section.active {
+        flex-direction: column;
+    }
+
+    .qr-image-container {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 20px;
+    }
+
+    .qr-instructions {
+        padding: 15px;
+    }
+
+    .qr-instructions ol {
+        font-size: 14px;
+    }
+
+    .payment-options {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .payment-option {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .mobile-note {
+        background: rgba(67, 97, 238, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-top: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .qr-image-container {
+        width: 220px;
+        height: 220px;
+        border-width: 15px;
+    }
+
+    .payment-option,
+    #openAlipay,
+    #openWeChat,
+    #saveQR {
+        min-height: 50px;
+        min-width: 50px;
+        font-size: 16px;
+    }
+
+    .modal-close {
+        width: 44px;
+        height: 44px;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* High-contrast mode for accessibility */
+@media (prefers-contrast: high) {
+    .qr-overlay {
+        background: rgba(0, 0, 0, 0.9);
+    }
+
+    .qr-image-container {
+        border: 3px solid black;
+    }
+}
+
+/* Landscape orientation optimization */
+@media (max-height: 600px) and (orientation: landscape) {
+    .modal-content {
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .qr-image-container {
+        width: 150px;
+        height: 150px;
+    }
+
+    .qr-instructions ol {
+        font-size: 12px;
+    }
+}
+
+/* iOS specific adjustments */
+@supports (-webkit-touch-callout: none) {
+    .qr-image-container {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .modal-content {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Android Chrome pull-to-refresh prevention */
+@media (hover: none) and (pointer: coarse) {
+    body.menu-open {
+        overscroll-behavior: none;
+    }
+}
