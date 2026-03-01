@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#4361ee">
     <!-- Manifest for PWA -->
@@ -87,6 +87,7 @@
 
     <!-- Hero Section -->
     <section class="hero" id="home">
+        <div class="hero-grid" aria-hidden="true"></div>
         <div class="container">
             <div class="hero-content">
                 <div class="hero-text">
@@ -488,6 +489,7 @@ Examples:
     <section class="features" id="features">
         <div class="container">
             <h2 class="section-title">Why Use Citation Fetcher?</h2>
+            <p class="section-subtitle">Everything you need to generate perfect BibTeX citations in seconds, with zero manual effort.</p>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">
@@ -539,6 +541,7 @@ Examples:
     <section class="how-to" id="how-to">
         <div class="container">
             <h2 class="section-title">How To Use</h2>
+            <p class="section-subtitle">Three simple steps to go from paper titles to ready-to-use BibTeX in under a minute.</p>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
@@ -579,6 +582,7 @@ Examples:
     <section class="api-info" id="api">
         <div class="container">
             <h2 class="section-title">Powered By Academic APIs</h2>
+            <p class="section-subtitle">We tap into the most trusted academic data sources to ensure your citations are always accurate.</p>
             <div class="api-cards">
                 <div class="api-card crossref">
                     <div class="api-header">
@@ -675,7 +679,7 @@ Examples:
                         <a href="https://github.com/hhhpraise" target="_blank">
                             <i class="fab fa-github"></i> GitHub
                         </a>
-                        <a href="mailto:praisemail33@gmail.com">
+                        <a href="/cdn-cgi/l/email-protection#b3c3c1d2dac0d6ded2dadf8080f3d4ded2dadf9dd0dcde">
                             <i class="fas fa-envelope"></i> Email
                         </a>
                     </div>
@@ -716,7 +720,7 @@ Examples:
             </div>
 
             <div class="footer-bottom">
-                <p>© 2025 Citation Fetcher v2.0. An open-source project. Not affiliated with Crossref or ArXiv.</p>
+                <p>© 2026 Citation Fetcher v2.0. An open-source project. Not affiliated with Crossref or ArXiv.</p>
                 <p>Made with <i class="fas fa-heart"></i> for researchers worldwide</p>
             </div>
         </div>
@@ -762,7 +766,7 @@ Examples:
                 <p>Citation Fetcher runs entirely in your browser. No paper titles or citation data are sent to any server except the official Crossref and ArXiv APIs.</p>
 
                 <p><strong>Crossref API Usage</strong></p>
-                <p>When using Crossref API, we include a generic email address (citation-fetcher@github.io) for polite API usage as required by their terms.</p>
+                <p>When using Crossref API, we include a generic email address (<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="503339243124393f3e7d36352433383522103739243825327e393f">[email&#160;protected]</a>) for polite API usage as required by their terms.</p>
 
                 <p><strong>ArXiv API Usage</strong></p>
                 <p>ArXiv API requests are anonymous and do not require any identification.</p>
@@ -784,7 +788,6 @@ Examples:
 
     <!-- Scripts -->
     <script src="script.js"></script>
-    <script src="service-worker.js"></script>
 
 <!-- QR Code Modal -->
 <div class="modal hidden" id="qrModal">
@@ -894,14 +897,15 @@ Examples:
             </div>
             <div class="enlarge-actions">
                 <button class="btn-primary" id="downloadEnlarged">
-                    <i class="fas fa-download"></i> Download Full Size
+                    <i class="fas fa-download"></i> Download
                 </button>
-                <button class="btn-outline" id="closeEnlargeBtn">
+                <button class="btn-outline" id="closeEnlargeBottom">
                     <i class="fas fa-times"></i> Close
                 </button>
             </div>
         </div>
     </div>
 </div>
+
 </body>
 </html>

@@ -1513,26 +1513,29 @@ function initKeyboardShortcuts() {
 // ===========================
 
 function initServiceWorker() {
-    if ('serviceWorker' in navigator && state.settings.enableOffline) {
-        navigator.serviceWorker.register('service-worker.js')
-            .then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-                updateOnlineStatus();
+    if (!('serviceWorker' in navigator) || !state.settings.enableOffline) return;
 
-                // Listen for updates
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            showToast('New version available! Refresh to update.', 'info', 5000);
-                        }
+    // Check the SW file actually exists before registering to avoid
+    // noisy 404 errors during local development.
+    fetch('service-worker.js', { method: 'HEAD' })
+        .then(res => {
+            if (!res.ok) return; // file missing – skip silently
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration.scope);
+                    updateOnlineStatus();
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showToast('New version available! Refresh to update.', 'info', 5000);
+                            }
+                        });
                     });
-                });
-            })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-    }
+                })
+                .catch(() => {}); // registration errors are non-fatal
+        })
+        .catch(() => {}); // network errors (offline) – skip silently
 }
 
 function updateOnlineStatus() {
