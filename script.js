@@ -1889,11 +1889,20 @@ async function resolveS2PaperId(result) {
     } catch { return null; }
 }
 
-async function fetchSimilarPapers(paperId) {
+async function fetchSimilarPapers(paperIds) {
+    // Uses the current S2 recommendations POST API (batched)
     try {
         const res = await fetch(
-            `https://api.semanticscholar.org/recommendations/v1/papers/forpaper/${paperId}` +
-            `?fields=title,authors,year,venue,externalIds&limit=6`
+            'https://api.semanticscholar.org/recommendations/v1/papers/' +
+            '?fields=title,authors,year,venue,externalIds&limit=10',
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    positivePaperIds: paperIds,
+                    negativePaperIds: []
+                })
+            }
         );
         if (!res.ok) return [];
         const data = await res.json();
@@ -1915,20 +1924,23 @@ async function fetchAndShowSimilarPapers() {
     `;
     document.getElementById('addSelectedSuggestions').disabled = true;
 
-    const seen = new Map(); // paperId → paper
-
+    // Resolve all S2 paper IDs first (individually, with polite delay)
+    const paperIds = [];
     for (const result of state.results) {
         if (result.bibtex.startsWith('%')) continue; // skip failed
         const paperId = await resolveS2PaperId(result);
-        if (!paperId) continue;
-        const papers = await fetchSimilarPapers(paperId);
-        for (const p of papers) {
-            if (p.paperId && !seen.has(p.paperId)) seen.set(p.paperId, p);
-        }
-        await new Promise(r => setTimeout(r, 400)); // polite delay
+        if (paperId) paperIds.push(paperId);
+        await new Promise(r => setTimeout(r, 300)); // polite delay between resolution calls
     }
 
-    renderSimilarPapers([...seen.values()]);
+    if (paperIds.length === 0) {
+        renderSimilarPapers([]);
+        return;
+    }
+
+    // Single batched POST for all resolved IDs
+    const papers = await fetchSimilarPapers(paperIds);
+    renderSimilarPapers(papers);
 }
 
 function renderSimilarPapers(papers) {
