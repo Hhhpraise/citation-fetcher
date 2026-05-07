@@ -3199,18 +3199,25 @@ a:focus-visible {
     .suggest-toggle span { display: none; }
     .result-actions { flex-wrap: wrap; gap: 8px; }
 }
-.suggestion-citations {
-    font-size: 0.74rem;
-    background: rgba(6, 214, 160, 0.12);
-    color: #06a87e;
-    padding: 1px 7px;
-    border-radius: 10px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+/* Dark mode: testimonial floating card */
+[data-theme="dark"] .floating-card {
+    background: rgba(30, 27, 75, 0.97);
+    border-color: rgba(255, 255, 255, 0.08);
 }
-[data-theme="dark"] .suggestion-citations {
-    background: rgba(6, 214, 160, 0.18);
-    color: #06d6a0;
+
+[data-theme="dark"] .floating-card > p {
+    color: #e2e8f0;
+    opacity: 1;
+}
+
+[data-theme="dark"] .floating-card i {
+    opacity: 0.8;
+}
+
+[data-theme="dark"] .user h4 {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .user p {
+    color: #94a3b8;
 }

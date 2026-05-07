@@ -535,11 +535,16 @@ async function processPapers() {
         elements.progressText.textContent = `${i + 1}/${lines.length}`;
         elements.currentPaper.textContent = `Processing: ${input.substring(0, 100)}${input.length > 100 ? '...' : ''}`;
 
-        // Determine API priority based on input type
+        // Detect type PER LINE so a DOI mixed in with titles is still
+        // fetched correctly as a DOI, not searched as a title string.
+        const lineType = detectInputType(input);
+        const isLineDOI   = lineType.includes('doi');
+        const isLineArxiv = lineType.includes('arxiv');
+
         let apiPriority = state.settings.apiPriority;
         if (apiPriority === 'auto') {
-            if (inputType.includes('doi')) apiPriority = 'crossref';
-            else if (inputType.includes('arxiv')) apiPriority = 'arxiv';
+            if (isLineDOI)   apiPriority = 'crossref';
+            else if (isLineArxiv) apiPriority = 'arxiv';
             else apiPriority = 'crossref';
         }
 
@@ -549,15 +554,15 @@ async function processPapers() {
 
         if (apiPriority === 'crossref') {
             attempts = [
-                () => fetchFromCrossref(input, inputType.includes('doi') ? 'doi' : 'title'),
-                () => fetchFromArxiv(input, inputType.includes('arxiv') ? 'arxiv' : 'title'),
-                () => fetchFromSemanticScholar(input, inputType.includes('doi') ? 'doi' : 'title')
+                () => fetchFromCrossref(input, isLineDOI ? 'doi' : 'title'),
+                () => fetchFromArxiv(input, isLineArxiv ? 'arxiv' : 'title'),
+                () => fetchFromSemanticScholar(input, isLineDOI ? 'doi' : 'title')
             ];
         } else if (apiPriority === 'arxiv') {
             attempts = [
-                () => fetchFromArxiv(input, inputType.includes('arxiv') ? 'arxiv' : 'title'),
-                () => fetchFromCrossref(input, inputType.includes('doi') ? 'doi' : 'title'),
-                () => fetchFromSemanticScholar(input, inputType.includes('doi') ? 'doi' : 'title')
+                () => fetchFromArxiv(input, isLineArxiv ? 'arxiv' : 'title'),
+                () => fetchFromCrossref(input, isLineDOI ? 'doi' : 'title'),
+                () => fetchFromSemanticScholar(input, isLineDOI ? 'doi' : 'title')
             ];
         }
 
@@ -1868,10 +1873,6 @@ function rotateTestimonial() {
 
 // ===========================
 // SIMILAR PAPERS — KEYWORD SEARCH + CITATION COUNT
-// Strategy: extract meaningful keywords from the user's paper titles,
-// search S2 for papers matching those keywords, then sort by citation
-// count descending. This surfaces foundational/influential papers
-// rather than whatever S2's recommendation model feels like returning.
 // ===========================
 
 const STOP_WORDS = new Set([
@@ -1880,7 +1881,8 @@ const STOP_WORDS = new Set([
     'at','by','from','as','into','through','during','before','after','above',
     'below','between','out','off','over','under','via','its','it','this',
     'that','these','those','using','based','new','novel','towards','toward',
-    'via','an','upon','about','we','our','their','can','more','some','such'
+    'upon','about','we','our','their','can','more','some','such','secure',
+    'analysis','method','approach','study','scheme','system','paper','work'
 ]);
 
 function extractKeywords(results) {
@@ -1897,7 +1899,6 @@ function extractKeywords(results) {
             words[clean] = (words[clean] || 0) + 1;
         });
     });
-    // Top 6 most-repeated meaningful words across all titles
     return Object.entries(words)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6)
@@ -1905,14 +1906,11 @@ function extractKeywords(results) {
 }
 
 async function searchS2ByKeywords(keywords) {
-    // Run two queries: broad (all keywords) + narrow (top 3), merge & dedupe
     const queries = [...new Set([
         keywords.join(' '),
         keywords.slice(0, 3).join(' ')
     ])];
-
     const seen = new Map();
-
     for (const query of queries) {
         try {
             const url = 'https://api.semanticscholar.org/graph/v1/paper/search' +
@@ -1925,11 +1923,9 @@ async function searchS2ByKeywords(keywords) {
             (data.data || []).forEach(p => {
                 if (p.paperId && !seen.has(p.paperId)) seen.set(p.paperId, p);
             });
-        } catch { /* skip failed query */ }
+        } catch { /* skip */ }
         await new Promise(r => setTimeout(r, 300));
     }
-
-    // Sort by citation count descending, return top 15
     return [...seen.values()]
         .filter(p => p.citationCount != null)
         .sort((a, b) => (b.citationCount || 0) - (a.citationCount || 0))
@@ -1961,20 +1957,14 @@ async function fetchAndShowSimilarPapers() {
     document.getElementById('addSelectedSuggestions').disabled = true;
 
     const keywords = extractKeywords(state.results);
-    if (keywords.length === 0) {
-        renderSimilarPapers([]);
-        return;
-    }
+    if (keywords.length === 0) { renderSimilarPapers([]); return; }
 
     const allPapers = await searchS2ByKeywords(keywords);
-
-    // Filter out papers the user already fetched
     const alreadyHave = getAlreadyFetchedDOIs();
     const filtered = allPapers.filter(p => {
         const doi = (p.externalIds && p.externalIds.DOI) ? p.externalIds.DOI.toLowerCase() : '';
         return !doi || !alreadyHave.has(doi);
     });
-
     renderSimilarPapers(filtered);
 }
 
@@ -1987,7 +1977,7 @@ function renderSimilarPapers(papers) {
         list.innerHTML = `
             <div class="similar-empty">
                 <i class="fas fa-search fa-2x"></i>
-                <p>No related papers found. This can happen if the papers aren't indexed in Semantic Scholar yet.</p>
+                <p>No related papers found. Try searching with more specific paper titles or DOIs.</p>
             </div>
         `;
         countBadge.textContent = '0 found';
@@ -1996,17 +1986,16 @@ function renderSimilarPapers(papers) {
 
     countBadge.textContent = `${papers.length} found`;
     list.innerHTML = '';
-
-    // Store for access when adding
     window._suggestionPapers = papers;
 
     papers.forEach((paper, i) => {
         const authorList = paper.authors || [];
         const shown = authorList.slice(0, 3).map(a => a.name).join(', ');
         const overflow = authorList.length > 3 ? ` +${authorList.length - 3} more` : '';
-        const doi = paper.externalIds?.DOI || '';
-        const arxivId = paper.externalIds?.ArXiv || '';
+        const doi = (paper.externalIds && paper.externalIds.DOI) ? paper.externalIds.DOI : '';
+        const arxivId = (paper.externalIds && paper.externalIds.ArXiv) ? paper.externalIds.ArXiv : '';
         const venue = paper.venue || '';
+        const citations = paper.citationCount != null ? paper.citationCount.toLocaleString() : null;
 
         const card = document.createElement('div');
         card.className = 'suggestion-card';
@@ -2022,19 +2011,18 @@ function renderSimilarPapers(papers) {
                 <div class="suggestion-info">
                     <div class="suggestion-title">${paper.title || 'Unknown Title'}</div>
                     <div class="suggestion-meta">
-                        ${shown ? `<span class="suggestion-authors">${shown}${overflow}</span>` : ''}
+                        ${shown ? `<span class="suggestion-authors"><i class="fas fa-user-friends"></i> ${shown}${overflow}</span>` : ''}
                         ${paper.year ? `<span class="suggestion-year">${paper.year}</span>` : ''}
                         ${venue ? `<span class="suggestion-venue">${venue}</span>` : ''}
-                        ${paper.citationCount != null ? `<span class="suggestion-citations"><i class="fas fa-quote-right"></i> ${paper.citationCount.toLocaleString()} citations</span>` : ''}
+                        ${citations !== null ? `<span class="suggestion-citations"><i class="fas fa-quote-right"></i> ${citations} citations</span>` : ''}
                     </div>
-                    ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> View paper</a>` : ''}
+                    ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> ${doi}</a>` : ''}
                 </div>
             </label>
         `;
         list.appendChild(card);
     });
 
-    // Event delegation — one listener handles all checkbox changes
     list.addEventListener('change', () => {
         const checkedCount = list.querySelectorAll('.suggestion-checkbox:checked').length;
         addBtn.disabled = checkedCount === 0;
