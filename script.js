@@ -1978,7 +1978,7 @@ async function searchS2ByKeywords(keywords) {
         try {
             const url = 'https://api.semanticscholar.org/graph/v1/paper/search' +
                 '?query=' + encodeURIComponent(query) +
-                '&fields=title,authors,year,venue,citationCount,externalIds' +
+                '&fields=title,authors,year,venue,citationCount,externalIds,abstract' +
                 '&limit=25';
             const res = await fetch(url);
             if (!res.ok) continue;
@@ -2031,6 +2031,58 @@ async function fetchAndShowSimilarPapers() {
     renderSimilarPapers(filtered);
 }
 
+// ---- Abstract tooltip singleton ----
+(function initAbstractTooltip() {
+    const tip = document.createElement('div');
+    tip.id = 'abstractTooltip';
+    tip.className = 'abstract-tooltip hidden';
+    document.body.appendChild(tip);
+
+    let hideTimer = null;
+
+    window._showAbstractTooltip = function(card, abstract, title) {
+        clearTimeout(hideTimer);
+        const text = abstract
+            ? abstract.length > 480 ? abstract.substring(0, 480) + '…' : abstract
+            : 'No abstract available for this paper.';
+
+        tip.innerHTML = `
+            <div class="abt-title">${title}</div>
+            <div class="abt-label"><i class="fas fa-align-left"></i> Abstract</div>
+            <div class="abt-body">${text}</div>
+        `;
+        tip.classList.remove('hidden');
+
+        // Position using viewport coords (tooltip is position:fixed, no scrollY needed)
+        const rect = card.getBoundingClientRect();
+        const tipW = 340;
+        const tipH = tip.offsetHeight || 260;
+        const gap = 12;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        // Horizontal: prefer right of card, fall back to left
+        let left = rect.right + gap;
+        if (left + tipW > vw - 16) left = rect.left - tipW - gap;
+        if (left < 8) left = 8;
+
+        // Vertical: align to card top, shift up if it would clip the bottom
+        let top = rect.top;
+        if (top + tipH > vh - 16) top = vh - tipH - 16;
+        if (top < 8) top = 8;
+
+        tip.style.left = `${left}px`;
+        tip.style.top = `${top}px`;
+    };
+
+    window._hideAbstractTooltip = function(delay = 120) {
+        hideTimer = setTimeout(() => tip.classList.add('hidden'), delay);
+    };
+
+    tip.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+    tip.addEventListener('mouseleave', () => window._hideAbstractTooltip(80));
+})();
+
 function renderSimilarPapers(papers) {
     const list = document.getElementById('similarPapersList');
     const countBadge = document.getElementById('similarCount');
@@ -2059,6 +2111,7 @@ function renderSimilarPapers(papers) {
         const arxivId = (paper.externalIds && paper.externalIds.ArXiv) ? paper.externalIds.ArXiv : '';
         const venue = paper.venue || '';
         const citations = paper.citationCount != null ? paper.citationCount.toLocaleString() : null;
+        const abstract = paper.abstract || '';
 
         const card = document.createElement('div');
         card.className = 'suggestion-card';
@@ -2081,11 +2134,20 @@ function renderSimilarPapers(papers) {
                     </div>
                     ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> ${doi}</a>` : ''}
                 </div>
+                <span class="abstract-hint" title="Hover to read abstract"><i class="fas fa-file-alt"></i></span>
             </label>
         `;
+
+        // Hover → show abstract tooltip
+        card.addEventListener('mouseenter', () => {
+            window._showAbstractTooltip(card, abstract, paper.title || 'Unknown Title');
+        });
+        card.addEventListener('mouseleave', () => window._hideAbstractTooltip());
+
         list.appendChild(card);
     });
 
+    // Re-attach change listener (list was cleared so old listener is gone)
     list.addEventListener('change', () => {
         const checkedCount = list.querySelectorAll('.suggestion-checkbox:checked').length;
         addBtn.disabled = checkedCount === 0;
