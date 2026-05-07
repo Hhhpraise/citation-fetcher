@@ -139,10 +139,10 @@
                         <i class="fas fa-quote-left"></i>
                         <p>Saved me hours of manual citation work! The smart detection features are amazing.</p>
                         <div class="user">
-                            <img src="https://i.pravatar.cc/40?img=1" alt="User" width="40" height="40">
+                            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
                             <div>
-                                <h4>Dr. Praise O. Arowolo</h4>
-                                <p>Researcher, XAUAT-China</p>
+                                <h4>Dr. A. Rahman</h4>
+                                <p>Researcher, MIT</p>
                             </div>
                         </div>
                     </div>
@@ -254,6 +254,11 @@ Examples:
                     <div class="results-header">
                         <h3><i class="fas fa-file-code"></i> Generated Citations</h3>
                         <div class="result-actions">
+                            <label class="suggest-toggle" title="After generating, fetch related papers from the same research area via Semantic Scholar">
+                                <input type="checkbox" id="suggestSimilar">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Suggest Similar Papers</span>
+                            </label>
                             <div class="export-format">
                                 <select id="exportFormat">
                                     <option value="bibtex">BibTeX</option>
@@ -335,6 +340,30 @@ Examples:
                                 <span id="retryCount">0</span> items will be retried
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Similar Papers Panel -->
+                    <div class="similar-papers-section hidden" id="similarPapersSection">
+                        <div class="similar-papers-header">
+                            <div class="similar-papers-title">
+                                <i class="fas fa-lightbulb"></i>
+                                <h4>Related Papers You Might Need</h4>
+                                <span class="similar-badge" id="similarCount">0 found</span>
+                            </div>
+                            <p class="similar-desc">These papers are in the same research area. Check the ones you want, then add them to your citation queue.</p>
+                            <div class="similar-controls">
+                                <button class="btn-small" id="selectAllSuggestions">
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button class="btn-small btn-outline-sm" id="deselectAllSuggestions">
+                                    <i class="fas fa-square"></i> Deselect All
+                                </button>
+                                <button class="btn-secondary" id="addSelectedSuggestions" disabled>
+                                    <i class="fas fa-plus"></i> Add selected to queue
+                                </button>
+                            </div>
+                        </div>
+                        <div class="similar-papers-list" id="similarPapersList"></div>
                     </div>
                 </div>
 

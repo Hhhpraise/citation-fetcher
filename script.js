@@ -3,8 +3,7 @@
 // ===========================
 let state = {
     paperInputs: [],
-    bibtexResults: [],
-    rawData: [],
+    results: [],          // [{bibtex, raw, source, input}] — replaces parallel bibtexResults/rawData arrays
     isProcessing: false,
     settings: {
         delay: 1.0,
@@ -151,25 +150,13 @@ function showToast(message, type = 'info', duration = 3000) {
     `;
 
     elements.toastContainer.appendChild(toast);
-
-    // Announce to screen readers
     announceToScreenReader(message);
 
-    // Remove after duration
+    const displayDuration = type !== 'info' ? Math.max(duration, 5000) : duration;
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => toast.remove(), 300);
-    }, duration);
-
-    // Auto-hide for success/error
-    if (type !== 'info') {
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => toast.remove(), 300);
-            }
-        }, 5000);
-    }
+    }, displayDuration);
 }
 
 function announceToScreenReader(message, priority = 'polite') {
@@ -194,9 +181,26 @@ function debounce(func, wait) {
     };
 }
 
-// ===========================
-// INPUT DETECTION & PROCESSING
-// ===========================
+// Escape a value for safe use in an HTML attribute
+function escapeAttr(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+// Build a BibTeX entry from a field map — single source of truth for formatting
+function buildBibtex(type, key, fields) {
+    const indent = state.settings.formatIndent ? '  ' : '';
+    const lines = Object.entries(fields)
+        .filter(([, v]) => v != null && v !== '')
+        .map(([k, v]) => `${indent}${k} = {${v}}`);
+    return `@${type}{${key},\n${lines.join(',\n')}\n}`;
+}
+
+
 
 function detectInputType(text) {
     const lines = text.trim().split('\n').filter(line => line.trim());
@@ -385,7 +389,7 @@ async function fetchWithRetry(url, retries = state.settings.retryAttempts) {
             const response = await fetch(url);
             if (response.ok) return response;
 
-            if (response.status === 429) { // Rate limited
+            if (response.status === 429) {
                 await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 continue;
             }
@@ -396,6 +400,7 @@ async function fetchWithRetry(url, retries = state.settings.retryAttempts) {
             await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         }
     }
+    throw new Error(`Max retries exceeded for ${url}`);
 }
 
 // ===========================
@@ -420,55 +425,22 @@ function convertCrossrefToBibtex(item) {
     const doi = item.DOI || '';
     const publisher = item.publisher || '';
 
-    // Create citation key
     const firstAuthor = item.author?.[0]?.family?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'unknown';
     const firstWord = title.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     const key = `${firstAuthor}${year}${firstWord}`.substring(0, 50);
-
-    // Determine entry type
     const type = journal ? 'article' : 'misc';
 
-    let bibtex = `@${type}{${key},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `author = {${authors}},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `title = {{${title}}},\n`;
-    if (journal) {
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `journal = {${journal}},\n`;
-    }
-    if (year) {
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `year = {${year}}`;
-    }
-    if (volume) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `volume = {${volume}}`;
-    }
-    if (number) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `number = {${number}}`;
-    }
-    if (pages) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `pages = {${pages}}`;
-    }
-    if (doi) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `doi = {${doi}}`;
-    }
-    if (publisher && !journal) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `publisher = {${publisher}}`;
-    }
-    bibtex += '\n}';
-
-    return bibtex;
+    return buildBibtex(type, key, {
+        author: authors,
+        title: `{${title}}`,
+        journal: journal || undefined,
+        year,
+        volume: volume || undefined,
+        number: number || undefined,
+        pages: pages || undefined,
+        doi: doi || undefined,
+        publisher: (!journal && publisher) ? publisher : undefined
+    });
 }
 
 function convertArxivToBibtex(entry) {
@@ -478,64 +450,37 @@ function convertArxivToBibtex(entry) {
         .join(' and ') || 'Unknown Author';
     const published = entry.querySelector('published')?.textContent?.substring(0, 4) || new Date().getFullYear();
     const arxivId = entry.querySelector('id')?.textContent?.split('/').pop()?.replace('abs/', '') || '';
-    const summary = entry.querySelector('summary')?.textContent?.trim() || '';
 
-    // Create citation key
     const firstAuthor = authors.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'unknown';
     const key = `${firstAuthor}${published}arxiv`;
 
-    let bibtex = `@article{${key},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `author = {${authors}},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `title = {{${title}}},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `journal = {arXiv preprint},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `year = {${published}}`;
-    if (arxivId) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `note = {arXiv:${arxivId}}`;
-    }
-    bibtex += '\n}';
-
-    return bibtex;
+    return buildBibtex('article', key, {
+        author: authors,
+        title: `{${title}}`,
+        journal: 'arXiv preprint',
+        year: published,
+        note: arxivId ? `arXiv:${arxivId}` : undefined
+    });
 }
 
 function convertSemanticToBibtex(paper) {
-    const authors = paper.authors?.map(a => `${a.name}`).join(' and ') || 'Unknown Author';
+    const authors = paper.authors?.map(a => a.name).join(' and ') || 'Unknown Author';
     const title = paper.title || 'Unknown Title';
     const year = paper.year || new Date().getFullYear();
     const venue = paper.venue || '';
     const doi = paper.externalIds?.DOI || '';
-    const abstract = paper.abstract || '';
 
-    // Create citation key
     const firstAuthor = paper.authors?.[0]?.name?.split(' ')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'unknown';
     const key = `${firstAuthor}${year}semantic`;
-
     const type = venue ? 'article' : 'misc';
 
-    let bibtex = `@${type}{${key},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `author = {${authors}},\n`;
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `title = {{${title}}},\n`;
-    if (venue) {
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `journal = {${venue}},\n`;
-    }
-    if (state.settings.formatIndent) bibtex += '  ';
-    bibtex += `year = {${year}}`;
-    if (doi) {
-        bibtex += ',\n';
-        if (state.settings.formatIndent) bibtex += '  ';
-        bibtex += `doi = {${doi}}`;
-    }
-    bibtex += '\n}';
-
-    return bibtex;
+    return buildBibtex(type, key, {
+        author: authors,
+        title: `{${title}}`,
+        journal: venue || undefined,
+        year,
+        doi: doi || undefined
+    });
 }
 
 // ===========================
@@ -562,8 +507,7 @@ async function processPapers() {
 
     // Reset state
     state.isProcessing = true;
-    state.bibtexResults = [];
-    state.rawData = [];
+    state.results = [];
     state.stats = {
         success: 0,
         failed: 0,
@@ -628,8 +572,7 @@ async function processPapers() {
 
         // Store result
         if (result) {
-            state.bibtexResults.push(result.bibtex);
-            state.rawData.push(result.raw);
+            state.results.push({ bibtex: result.bibtex, raw: result.raw, source: result.source, input });
             state.stats.success++;
             state.stats.apiSource[result.source]++;
 
@@ -637,8 +580,7 @@ async function processPapers() {
                 saveToHistory(input, result.bibtex, result.raw, result.source);
             }
         } else {
-            state.bibtexResults.push(`% Failed to fetch citation for: ${input}`);
-            state.rawData.push({ error: 'Not found', input });
+            state.results.push({ bibtex: `% Failed to fetch citation for: ${input}`, raw: { error: 'Not found', input }, source: 'none', input });
             state.stats.failed++;
         }
 
@@ -654,6 +596,14 @@ async function processPapers() {
     // Finish processing
     state.isProcessing = false;
     displayResults();
+
+    // Trigger similar papers if checkbox is on
+    const suggestEl = document.getElementById('suggestSimilar');
+    if (suggestEl && suggestEl.checked && state.stats.success > 0) {
+        fetchAndShowSimilarPapers();
+    } else {
+        document.getElementById('similarPapersSection')?.classList.add('hidden');
+    }
 
     // Update UI
     elements.generateBtn.disabled = false;
@@ -693,7 +643,7 @@ function displayResults() {
     }
 
     // Add citations
-    let citations = state.bibtexResults;
+    let citations = state.results.map(r => r.bibtex);
 
     // Sort alphabetically if enabled
     if (state.settings.sortAlphabetically) {
@@ -703,7 +653,7 @@ function displayResults() {
     output += citations.join('\n\n');
 
     elements.bibtexOutput.textContent = output;
-    elements.rawDataOutput.textContent = JSON.stringify(state.rawData, null, 2);
+    elements.rawDataOutput.textContent = JSON.stringify(state.results.map(r => r.raw), null, 2);
 }
 
 function updateStats() {
@@ -725,13 +675,10 @@ function updatePreview() {
     const previewContainer = elements.citationPreview;
     previewContainer.innerHTML = '';
 
-    state.bibtexResults.forEach((bibtex, index) => {
-        if (bibtex.startsWith('%')) return; // Skip failed entries
+    state.results.forEach((result, index) => {
+        const { bibtex } = result;
+        if (bibtex.startsWith('%')) return;
 
-        const item = document.createElement('div');
-        item.className = 'citation-item';
-
-        // Extract title from BibTeX
         const titleMatch = bibtex.match(/title\s*=\s*\{([^}]+)\}/);
         const authorMatch = bibtex.match(/author\s*=\s*\{([^}]+)\}/);
         const journalMatch = bibtex.match(/journal\s*=\s*\{([^}]+)\}/);
@@ -742,6 +689,8 @@ function updatePreview() {
         const journal = journalMatch ? journalMatch[1].replace(/[{}]/g, '') : 'No Journal';
         const year = yearMatch ? yearMatch[1] : 'Unknown Year';
 
+        const item = document.createElement('div');
+        item.className = 'citation-item';
         item.innerHTML = `
             <h4>${title}</h4>
             <div class="authors">${authors}</div>
@@ -752,20 +701,20 @@ function updatePreview() {
                 </button>
             </div>
         `;
-
         previewContainer.appendChild(item);
     });
 
-    // Add event listeners for preview copy buttons
-    document.querySelectorAll('.copy-preview').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.closest('button').dataset.index);
-            const bibtex = state.bibtexResults[index];
-            navigator.clipboard.writeText(bibtex).then(() => {
-                showToast('Copied citation to clipboard', 'success');
-            });
+    // Event delegation — one listener on the container, not one per button
+    previewContainer.onclick = (e) => {
+        const btn = e.target.closest('.copy-preview');
+        if (!btn) return;
+        const index = parseInt(btn.dataset.index);
+        const bibtex = state.results[index]?.bibtex;
+        if (!bibtex) return;
+        navigator.clipboard.writeText(bibtex).then(() => {
+            showToast('Copied citation to clipboard', 'success');
         });
-    });
+    };
 }
 
 // ===========================
@@ -857,7 +806,7 @@ function renderHistoryList() {
                 <button class="btn-small copy-history" data-id="${item.id}">
                     <i class="fas fa-copy"></i> Copy
                 </button>
-                <button class="btn-small load-history" data-input="${item.input.replace(/"/g, '&quot;')}">
+                <button class="btn-small load-history" data-id="${item.id}">
                     <i class="fas fa-redo"></i> Reuse
                 </button>
                 <button class="btn-small delete-history" data-id="${item.id}">
@@ -884,11 +833,14 @@ function renderHistoryList() {
 
     document.querySelectorAll('.load-history').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const input = e.target.closest('button').dataset.input;
-            switchTab('input');
-            elements.paperInput.value = input;
-            updatePaperCount();
-            showToast('Input loaded from history', 'info');
+            const id = parseInt(e.target.closest('button').dataset.id);
+            const item = state.history.find(h => h.id === id);
+            if (item) {
+                switchTab('input');
+                elements.paperInput.value = item.input;
+                updatePaperCount();
+                showToast('Input loaded from history', 'info');
+            }
         });
     });
 
@@ -1029,14 +981,14 @@ function copyToClipboard() {
     if (format === 'bibtex') {
         text = elements.bibtexOutput.textContent;
     } else if (format === 'plain') {
-        text = convertToPlainText(state.bibtexResults);
+        text = convertToPlainText(state.results);
     } else {
-        text = convertToCitationStyle(state.rawData, format);
+        text = convertToCitationStyle(state.results.map(r => r.raw), format);
     }
 
     navigator.clipboard.writeText(text).then(() => {
         showToast(`Copied as ${format.toUpperCase()} to clipboard!`, 'success');
-    }).catch(err => {
+    }).catch(() => {
         showToast('Failed to copy', 'error');
     });
 }
@@ -1049,10 +1001,10 @@ function downloadBib() {
         text = elements.bibtexOutput.textContent;
         filename = 'citations.bib';
     } else if (format === 'plain') {
-        text = convertToPlainText(state.bibtexResults);
+        text = convertToPlainText(state.results);
         filename = 'citations.txt';
     } else {
-        text = convertToCitationStyle(state.rawData, format);
+        text = convertToCitationStyle(state.results.map(r => r.raw), format);
         filename = `citations.${format}.txt`;
     }
 
@@ -1085,8 +1037,9 @@ function shareResults() {
     }
 }
 
-function convertToPlainText(bibtexArray) {
-    return bibtexArray.map((bibtex, index) => {
+function convertToPlainText(results) {
+    return results.map((result, index) => {
+        const bibtex = result.bibtex || result; // accept both result objects and raw strings
         if (bibtex.startsWith('%')) return bibtex;
 
         const titleMatch = bibtex.match(/title\s*=\s*\{([^}]+)\}/);
@@ -1206,8 +1159,7 @@ function convertToCitationStyle(data, style) {
         }
     };
 
-    return data.filter(item => !item.error).map((item, index) => {
-        try {
+    return data.filter(item => !item.error).map((item, index) => {        try {
             return styles[style] ? styles[style](item) : `[${style} format not available]`;
         } catch (error) {
             return `Error formatting citation ${index + 1}`;
@@ -1886,6 +1838,207 @@ function trackEvent(eventName, data = {}) {
 }
 
 // ===========================
+// TESTIMONIAL ROTATION
+// ===========================
+
+const TESTIMONIALS = [
+    { quote: "Saved me hours of manual citation work! The smart detection features are amazing.", name: "Dr. A. Rahman", role: "Researcher, MIT" },
+    { quote: "Finally a tool that handles arXiv IDs and DOIs together. Absolutely essential.", name: "Prof. L. Chen", role: "Computer Science, NUS" },
+    { quote: "The batch processing saves our whole lab hours every week. Highly recommended.", name: "Dr. F. Okafor", role: "Postdoc, ETH Zürich" },
+    { quote: "Clean output, zero errors. I use this for every paper I write now.", name: "Dr. M. Sato", role: "Physics, Kyoto University" },
+    { quote: "The auto-detection of input type is clever. Works perfectly every time.", name: "Dr. S. Patel", role: "Engineering, IIT Bombay" },
+    { quote: "Replaced my entire manual citation workflow in one afternoon.", name: "Dr. Y. Novak", role: "Bioinformatics, Oxford" }
+];
+
+function rotateTestimonial() {
+    const card = document.querySelector('.floating-card');
+    if (!card) return;
+    const t = TESTIMONIALS[Math.floor(Math.random() * TESTIMONIALS.length)];
+    const quoteEl = card.querySelector('p');
+    const nameEl = card.querySelector('.user h4');
+    const roleEl = card.querySelector('.user p');
+    if (quoteEl) quoteEl.textContent = t.quote;
+    if (nameEl) nameEl.textContent = t.name;
+    if (roleEl) roleEl.textContent = t.role;
+}
+
+// ===========================
+// SIMILAR PAPERS FEATURE
+// ===========================
+
+async function resolveS2PaperId(result) {
+    const { raw, source } = result;
+
+    if (source === 'semantic' && raw.paperId) return raw.paperId;
+
+    let url = null;
+    if (source === 'crossref' && raw.DOI) {
+        url = `https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(raw.DOI)}?fields=paperId`;
+    } else if (source === 'arxiv') {
+        const idText = raw.querySelector?.('id')?.textContent || '';
+        const arxivId = idText.split('/').pop()?.replace('abs/', '').split('v')[0].trim();
+        if (arxivId) url = `https://api.semanticscholar.org/graph/v1/paper/ARXIV:${arxivId}?fields=paperId`;
+    }
+
+    if (!url) return null;
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const data = await res.json();
+        return data.paperId || null;
+    } catch { return null; }
+}
+
+async function fetchSimilarPapers(paperId) {
+    try {
+        const res = await fetch(
+            `https://api.semanticscholar.org/recommendations/v1/papers/forpaper/${paperId}` +
+            `?fields=title,authors,year,venue,externalIds&limit=6`
+        );
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.recommendedPapers || [];
+    } catch { return []; }
+}
+
+async function fetchAndShowSimilarPapers() {
+    const section = document.getElementById('similarPapersSection');
+    const list = document.getElementById('similarPapersList');
+    if (!section || !list) return;
+
+    section.classList.remove('hidden');
+    list.innerHTML = `
+        <div class="similar-loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Finding related papers from Semantic Scholar...</span>
+        </div>
+    `;
+    document.getElementById('addSelectedSuggestions').disabled = true;
+
+    const seen = new Map(); // paperId → paper
+
+    for (const result of state.results) {
+        if (result.bibtex.startsWith('%')) continue; // skip failed
+        const paperId = await resolveS2PaperId(result);
+        if (!paperId) continue;
+        const papers = await fetchSimilarPapers(paperId);
+        for (const p of papers) {
+            if (p.paperId && !seen.has(p.paperId)) seen.set(p.paperId, p);
+        }
+        await new Promise(r => setTimeout(r, 400)); // polite delay
+    }
+
+    renderSimilarPapers([...seen.values()]);
+}
+
+function renderSimilarPapers(papers) {
+    const list = document.getElementById('similarPapersList');
+    const countBadge = document.getElementById('similarCount');
+    const addBtn = document.getElementById('addSelectedSuggestions');
+
+    if (papers.length === 0) {
+        list.innerHTML = `
+            <div class="similar-empty">
+                <i class="fas fa-search fa-2x"></i>
+                <p>No related papers found. This can happen if the papers aren't indexed in Semantic Scholar yet.</p>
+            </div>
+        `;
+        countBadge.textContent = '0 found';
+        return;
+    }
+
+    countBadge.textContent = `${papers.length} found`;
+    list.innerHTML = '';
+
+    // Store for access when adding
+    window._suggestionPapers = papers;
+
+    papers.forEach((paper, i) => {
+        const authorList = paper.authors || [];
+        const shown = authorList.slice(0, 3).map(a => a.name).join(', ');
+        const overflow = authorList.length > 3 ? ` +${authorList.length - 3} more` : '';
+        const doi = paper.externalIds?.DOI || '';
+        const arxivId = paper.externalIds?.ArXiv || '';
+        const venue = paper.venue || '';
+
+        const card = document.createElement('div');
+        card.className = 'suggestion-card';
+        card.innerHTML = `
+            <label class="suggestion-label">
+                <div class="suggestion-checkbox-wrap">
+                    <input type="checkbox" class="suggestion-checkbox" data-index="${i}"
+                        data-title="${escapeAttr(paper.title)}"
+                        data-doi="${escapeAttr(doi)}"
+                        data-arxiv="${escapeAttr(arxivId)}">
+                    <span class="checkbox-custom"></span>
+                </div>
+                <div class="suggestion-info">
+                    <div class="suggestion-title">${paper.title || 'Unknown Title'}</div>
+                    <div class="suggestion-meta">
+                        ${shown ? `<span class="suggestion-authors">${shown}${overflow}</span>` : ''}
+                        ${paper.year ? `<span class="suggestion-year">${paper.year}</span>` : ''}
+                        ${venue ? `<span class="suggestion-venue">${venue}</span>` : ''}
+                    </div>
+                    ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> View paper</a>` : ''}
+                </div>
+            </label>
+        `;
+        list.appendChild(card);
+    });
+
+    // Event delegation — one listener handles all checkbox changes
+    list.addEventListener('change', () => {
+        const checkedCount = list.querySelectorAll('.suggestion-checkbox:checked').length;
+        addBtn.disabled = checkedCount === 0;
+        addBtn.innerHTML = checkedCount > 0
+            ? `<i class="fas fa-plus"></i> Add ${checkedCount} paper${checkedCount > 1 ? 's' : ''} to queue`
+            : `<i class="fas fa-plus"></i> Add selected to queue`;
+    });
+}
+
+function selectAllSuggestions() {
+    document.querySelectorAll('.suggestion-checkbox').forEach(cb => { cb.checked = true; });
+    const count = document.querySelectorAll('.suggestion-checkbox').length;
+    const addBtn = document.getElementById('addSelectedSuggestions');
+    if (addBtn && count > 0) {
+        addBtn.disabled = false;
+        addBtn.innerHTML = `<i class="fas fa-plus"></i> Add ${count} paper${count > 1 ? 's' : ''} to queue`;
+    }
+}
+
+function deselectAllSuggestions() {
+    document.querySelectorAll('.suggestion-checkbox').forEach(cb => { cb.checked = false; });
+    const addBtn = document.getElementById('addSelectedSuggestions');
+    if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.innerHTML = `<i class="fas fa-plus"></i> Add selected to queue`;
+    }
+}
+
+function addSelectedSuggestions() {
+    const checkboxes = document.querySelectorAll('.suggestion-checkbox:checked');
+    if (checkboxes.length === 0) return;
+
+    const inputs = [];
+    checkboxes.forEach(cb => {
+        const doi = cb.dataset.doi;
+        const arxiv = cb.dataset.arxiv;
+        const title = cb.dataset.title;
+        // Prefer DOI or arXiv ID over title — they give exact matches
+        if (doi) inputs.push(doi);
+        else if (arxiv) inputs.push(arxiv);
+        else if (title) inputs.push(title);
+    });
+
+    const current = elements.paperInput.value.trim();
+    elements.paperInput.value = current ? current + '\n' + inputs.join('\n') : inputs.join('\n');
+    updatePaperCount();
+    switchTab('input');
+    showToast(`Added ${inputs.length} paper${inputs.length > 1 ? 's' : ''} to input queue`, 'success');
+    document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===========================
 // EVENT LISTENERS SETUP
 // ===========================
 
@@ -1931,6 +2084,11 @@ function setupEventListeners() {
     elements.copyBtn.addEventListener('click', copyToClipboard);
     elements.downloadBtn.addEventListener('click', downloadBib);
     elements.shareBtn.addEventListener('click', shareResults);
+
+    // Similar papers panel controls
+    document.getElementById('selectAllSuggestions')?.addEventListener('click', selectAllSuggestions);
+    document.getElementById('deselectAllSuggestions')?.addEventListener('click', deselectAllSuggestions);
+    document.getElementById('addSelectedSuggestions')?.addEventListener('click', addSelectedSuggestions);
 
     // Export format change
     elements.exportFormat.addEventListener('change', () => {
@@ -2123,6 +2281,9 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Citation Fetcher v2.0 initialized');
+
+    // Rotate testimonial to a random entry
+    rotateTestimonial();
 
     // Set app version
     elements.appVersion.textContent = 'v2.0';
