@@ -204,6 +204,11 @@ Examples:
                                 <i class="fas fa-lightbulb"></i>
                                 <span>We automatically detect the type of input (titles, DOIs, or arXiv IDs)</span>
                             </div>
+                            <!-- Per-line validation feedback -->
+                            <div class="line-validation-panel hidden" id="lineValidation">
+                                <div class="line-validation-summary" id="lineValidationSummary"></div>
+                                <div class="line-validation-issues hidden" id="lineValidationIssues"></div>
+                            </div>
                         </div>
                         <div class="method-card" id="method-file">
                             <i class="fas fa-file-upload"></i>
@@ -357,6 +362,9 @@ Examples:
                                 </button>
                                 <button class="btn-small btn-outline-sm" id="deselectAllSuggestions">
                                     <i class="fas fa-square"></i> Deselect All
+                                </button>
+                                <button class="btn-small btn-outline-sm" id="refreshSuggestions" title="Re-fetch related papers">
+                                    <i class="fas fa-sync-alt"></i> Refresh
                                 </button>
                                 <button class="btn-secondary" id="addSelectedSuggestions" disabled>
                                     <i class="fas fa-plus"></i> Add selected to queue

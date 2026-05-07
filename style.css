@@ -3221,3 +3221,220 @@ a:focus-visible {
 [data-theme="dark"] .user p {
     color: #94a3b8;
 }
+/* =============================================
+   FIX 1 — CITATION COUNT BADGE (more prominent)
+   ============================================= */
+.suggestion-citations {
+    font-size: 0.76rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(67,97,238,0.12), rgba(114,9,183,0.1));
+    color: var(--primary);
+    padding: 2px 9px;
+    border-radius: 10px;
+    border: 1px solid rgba(67,97,238,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+.suggestion-citations i { font-size: 0.7rem; opacity: 0.7; }
+
+/* =============================================
+   FIX 2 — IMPROVED PREVIEW CITATION CARDS
+   citation-item gets visual hierarchy:
+   status bar at top, then title, authors, journal
+   ============================================= */
+.citation-item {
+    background: var(--light-gray);
+    border-radius: var(--border-radius);
+    border: 1.5px solid transparent;
+    overflow: hidden;
+    transition: var(--transition);
+    padding: 0;
+}
+.citation-item:hover {
+    border-color: rgba(67,97,238,0.2);
+    box-shadow: 0 4px 16px rgba(67,97,238,0.08);
+    transform: none; /* override old translateX — looks jittery in a list */
+}
+.citation-ok { border-left: 4px solid var(--success); }
+.citation-failed { border-left: 4px solid var(--danger); opacity: 0.8; }
+
+/* Status bar — the scannable top strip */
+.citation-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.025);
+    border-bottom: 1px solid var(--light-gray);
+    flex-wrap: wrap;
+}
+[data-theme="dark"] .citation-status-bar {
+    background: rgba(255,255,255,0.03);
+}
+
+.ci-status-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.ci-ok {
+    background: rgba(6,214,160,0.12);
+    color: #059669;
+    border: 1px solid rgba(6,214,160,0.3);
+}
+.ci-failed {
+    background: rgba(247,37,133,0.1);
+    color: var(--danger);
+    border: 1px solid rgba(247,37,133,0.2);
+}
+
+.ci-source-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+.ci-source-crossref { background: rgba(67,97,238,0.1); color: var(--primary); }
+.ci-source-arxiv    { background: rgba(179,27,27,0.1); color: #b31b1b; }
+.ci-source-semantic { background: rgba(24,90,219,0.1); color: #185adb; }
+.ci-source-unknown  { background: var(--light-gray); color: var(--gray); }
+
+.ci-year-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--light-gray);
+    color: var(--dark);
+    flex-shrink: 0;
+}
+
+.ci-copy-btn {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+.ci-input-label {
+    font-size: 0.75rem;
+    color: var(--gray);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Content area below the status bar */
+.ci-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--dark);
+    line-height: 1.45;
+    padding: 12px 14px 4px;
+    margin: 0;
+}
+.ci-authors {
+    font-size: 0.82rem;
+    color: var(--gray);
+    font-style: italic;
+    padding: 0 14px 4px;
+}
+.ci-journal {
+    font-size: 0.78rem;
+    color: var(--gray);
+    padding: 0 14px 12px;
+}
+
+/* =============================================
+   FIX 3 — ADD SELECTED CONFIRMATION STATE
+   ============================================= */
+.btn-confirmed {
+    background: var(--success) !important;
+    border-color: var(--success) !important;
+    color: white !important;
+    cursor: default !important;
+    transform: none !important;
+}
+.btn-confirmed:hover {
+    background: var(--success) !important;
+    box-shadow: 0 4px 12px rgba(6,214,160,0.35) !important;
+}
+
+/* =============================================
+   FIX 4 — PER-LINE VALIDATION PANEL
+   ============================================= */
+.line-validation-panel {
+    margin-top: 10px;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    border: 1.5px solid var(--light-gray);
+    font-size: 0.82rem;
+}
+.line-validation-summary {
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--light-gray);
+    font-weight: 500;
+}
+.line-validation-summary i { flex-shrink: 0; }
+.line-validation-issues {
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 140px;
+    overflow-y: auto;
+    background: var(--light);
+}
+.validation-issue {
+    display: grid;
+    grid-template-columns: 52px 120px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: rgba(247,37,133,0.05);
+    border-left: 3px solid var(--danger);
+}
+.validation-linenum {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--danger);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+}
+.validation-reason {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--warning);
+    white-space: nowrap;
+}
+.validation-text {
+    font-size: 0.72rem;
+    color: var(--gray);
+    font-family: var(--font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .line-validation-panel { border-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .line-validation-summary { background: rgba(255,255,255,0.06); }
+[data-theme="dark"] .line-validation-issues { background: rgba(0,0,0,0.2); }
+[data-theme="dark"] .validation-issue { background: rgba(247,37,133,0.08); }
+
+/* =============================================
+   FIX 5 — REFRESH BUTTON (inherits btn-outline-sm)
+   Just needs a spin animation on its icon
+   ============================================= */
+#refreshSuggestions.loading i { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

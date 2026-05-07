@@ -261,8 +261,11 @@ function updatePaperCount() {
     if (count > 0) {
         const type = detectInputType(text);
         updateInputTypeUI(type);
+        validateInputLines(lines);
     } else {
         elements.inputTypeIndicator.textContent = 'Waiting for input...';
+        const panel = document.getElementById('lineValidation');
+        if (panel) panel.classList.add('hidden');
     }
 
     // Enable/disable generate button
@@ -273,6 +276,49 @@ function updatePaperCount() {
         state.inputHistory.push(text);
         state.currentInputIndex = state.inputHistory.length - 1;
         elements.undoBtn.disabled = false;
+    }
+}
+
+// Per-line validation: flag malformed DOIs so users know before hitting Generate
+function validateInputLines(lines) {
+    const panel = document.getElementById('lineValidation');
+    const summary = document.getElementById('lineValidationSummary');
+    const issuesList = document.getElementById('lineValidationIssues');
+    if (!panel || !summary || !issuesList) return;
+
+    const doiLike = /10\./;       // starts with 10. but might still be malformed
+    const validDoi = /^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i;
+    const validArxiv = /^\d{4}\.\d{4,5}(v\d+)?$/;
+
+    const issues = [];
+    lines.forEach((line, i) => {
+        const trimmed = line.trim();
+        // Looks like a DOI attempt but fails validation
+        if (doiLike.test(trimmed) && !validDoi.test(trimmed)) {
+            issues.push({ lineNum: i + 1, text: trimmed, reason: 'Malformed DOI' });
+        }
+        // Looks like an arXiv attempt (4 digits dot ...) but fails
+        else if (/^\d{4}\.\d+/.test(trimmed) && !validArxiv.test(trimmed)) {
+            issues.push({ lineNum: i + 1, text: trimmed, reason: 'Malformed arXiv ID' });
+        }
+    });
+
+    panel.classList.remove('hidden');
+
+    if (issues.length === 0) {
+        summary.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> All lines look valid`;
+        issuesList.classList.add('hidden');
+        issuesList.innerHTML = '';
+    } else {
+        summary.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:var(--warning)"></i> <strong>${issues.length}</strong> line${issues.length > 1 ? 's' : ''} may cause API failures — fix before generating`;
+        issuesList.classList.remove('hidden');
+        issuesList.innerHTML = issues.map(issue =>
+            `<div class="validation-issue">
+                <span class="validation-linenum">Line ${issue.lineNum}</span>
+                <span class="validation-reason">${issue.reason}</span>
+                <span class="validation-text">${escapeAttr(issue.text.substring(0, 60))}${issue.text.length > 60 ? '…' : ''}</span>
+            </div>`
+        ).join('');
     }
 }
 
@@ -681,35 +727,52 @@ function updatePreview() {
     previewContainer.innerHTML = '';
 
     state.results.forEach((result, index) => {
-        const { bibtex } = result;
-        if (bibtex.startsWith('%')) return;
-
-        const titleMatch = bibtex.match(/title\s*=\s*\{([^}]+)\}/);
-        const authorMatch = bibtex.match(/author\s*=\s*\{([^}]+)\}/);
-        const journalMatch = bibtex.match(/journal\s*=\s*\{([^}]+)\}/);
-        const yearMatch = bibtex.match(/year\s*=\s*\{([^}]+)\}/);
-
-        const title = titleMatch ? titleMatch[1].replace(/[{}]/g, '') : 'Unknown Title';
-        const authors = authorMatch ? authorMatch[1].replace(/[{}]/g, '') : 'Unknown Authors';
-        const journal = journalMatch ? journalMatch[1].replace(/[{}]/g, '') : 'No Journal';
-        const year = yearMatch ? yearMatch[1] : 'Unknown Year';
+        const { bibtex, source } = result;
+        const failed = bibtex.startsWith('%');
 
         const item = document.createElement('div');
-        item.className = 'citation-item';
-        item.innerHTML = `
-            <h4>${title}</h4>
-            <div class="authors">${authors}</div>
-            <div class="journal">${journal}, ${year}</div>
-            <div class="preview-actions">
-                <button class="btn-small copy-preview" data-index="${index}">
-                    <i class="fas fa-copy"></i> Copy
-                </button>
-            </div>
-        `;
+        item.className = `citation-item ${failed ? 'citation-failed' : 'citation-ok'}`;
+
+        if (failed) {
+            const inputText = result.input || bibtex.replace(/^% Failed to fetch citation for:\s*/, '');
+            item.innerHTML = `
+                <div class="citation-status-bar">
+                    <span class="ci-status-badge ci-failed"><i class="fas fa-times-circle"></i> Not found</span>
+                    <span class="ci-input-label">${escapeAttr(inputText.substring(0, 80))}${inputText.length > 80 ? '…' : ''}</span>
+                </div>`;
+        } else {
+            const titleMatch = bibtex.match(/title\s*=\s*\{+([^}]+)\}+/);
+            const authorMatch = bibtex.match(/author\s*=\s*\{([^}]+)\}/);
+            const journalMatch = bibtex.match(/journal\s*=\s*\{([^}]+)\}/);
+            const yearMatch = bibtex.match(/year\s*=\s*\{([^}]+)\}/);
+
+            const title = titleMatch ? titleMatch[1].replace(/[{}]/g, '') : 'Unknown Title';
+            const authors = authorMatch ? authorMatch[1].replace(/[{}]/g, '') : 'Unknown Authors';
+            const journal = journalMatch ? journalMatch[1].replace(/[{}]/g, '') : '';
+            const year = yearMatch ? yearMatch[1] : '';
+
+            const sourceLabel = { crossref: 'Crossref', arxiv: 'ArXiv', semantic: 'Semantic Scholar' }[source] || source;
+            const sourceClass = source || 'unknown';
+
+            item.innerHTML = `
+                <div class="citation-status-bar">
+                    <span class="ci-status-badge ci-ok"><i class="fas fa-check-circle"></i> OK</span>
+                    <span class="ci-source-badge ci-source-${sourceClass}">${sourceLabel}</span>
+                    ${year ? `<span class="ci-year-badge">${year}</span>` : ''}
+                    <button class="btn-small copy-preview ci-copy-btn" data-index="${index}">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <h4 class="ci-title">${title}</h4>
+                <div class="ci-authors">${authors}</div>
+                ${journal ? `<div class="ci-journal">${journal}</div>` : ''}
+            `;
+        }
+
         previewContainer.appendChild(item);
     });
 
-    // Event delegation — one listener on the container, not one per button
+    // Event delegation
     previewContainer.onclick = (e) => {
         const btn = e.target.closest('.copy-preview');
         if (!btn) return;
@@ -2069,6 +2132,19 @@ function addSelectedSuggestions() {
     const current = elements.paperInput.value.trim();
     elements.paperInput.value = current ? current + '\n' + inputs.join('\n') : inputs.join('\n');
     updatePaperCount();
+
+    // Visual confirmation: briefly transform the button so the user knows it worked
+    const addBtn = document.getElementById('addSelectedSuggestions');
+    if (addBtn) {
+        addBtn.innerHTML = `<i class="fas fa-check"></i> ${inputs.length} paper${inputs.length > 1 ? 's' : ''} added to queue!`;
+        addBtn.classList.add('btn-confirmed');
+        addBtn.disabled = true;
+        setTimeout(() => {
+            addBtn.innerHTML = `<i class="fas fa-plus"></i> Add selected to queue`;
+            addBtn.classList.remove('btn-confirmed');
+        }, 2500);
+    }
+
     switchTab('input');
     showToast(`Added ${inputs.length} paper${inputs.length > 1 ? 's' : ''} to input queue`, 'success');
     document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' });
@@ -2125,6 +2201,13 @@ function setupEventListeners() {
     document.getElementById('selectAllSuggestions')?.addEventListener('click', selectAllSuggestions);
     document.getElementById('deselectAllSuggestions')?.addEventListener('click', deselectAllSuggestions);
     document.getElementById('addSelectedSuggestions')?.addEventListener('click', addSelectedSuggestions);
+    document.getElementById('refreshSuggestions')?.addEventListener('click', () => {
+        if (state.stats.success > 0) {
+            fetchAndShowSimilarPapers();
+        } else {
+            showToast('Generate citations first before refreshing suggestions', 'warning');
+        }
+    });
 
     // Export format change
     elements.exportFormat.addEventListener('change', () => {
