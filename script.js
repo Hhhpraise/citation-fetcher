@@ -1866,48 +1866,84 @@ function rotateTestimonial() {
 // SIMILAR PAPERS FEATURE
 // ===========================
 
-async function resolveS2PaperId(result) {
-    const { raw, source } = result;
+// ===========================
+// SIMILAR PAPERS — KEYWORD SEARCH + CITATION COUNT
+// Strategy: extract meaningful keywords from the user's paper titles,
+// search S2 for papers matching those keywords, then sort by citation
+// count descending. This surfaces foundational/influential papers
+// rather than whatever S2's recommendation model feels like returning.
+// ===========================
 
-    if (source === 'semantic' && raw.paperId) return raw.paperId;
+const STOP_WORDS = new Set([
+    'a','an','the','and','or','of','in','on','for','to','with','is','are',
+    'was','were','be','been','being','have','has','had','do','does','did',
+    'at','by','from','as','into','through','during','before','after','above',
+    'below','between','out','off','over','under','via','its','it','this',
+    'that','these','those','using','based','new','novel','towards','toward',
+    'via','an','upon','about','we','our','their','can','more','some','such'
+]);
 
-    let url = null;
-    if (source === 'crossref' && raw.DOI) {
-        url = `https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(raw.DOI)}?fields=paperId`;
-    } else if (source === 'arxiv') {
-        const idText = raw.querySelector?.('id')?.textContent || '';
-        const arxivId = idText.split('/').pop()?.replace('abs/', '').split('v')[0].trim();
-        if (arxivId) url = `https://api.semanticscholar.org/graph/v1/paper/ARXIV:${arxivId}?fields=paperId`;
-    }
-
-    if (!url) return null;
-    try {
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.paperId || null;
-    } catch { return null; }
+function extractKeywords(results) {
+    const words = {};
+    results.forEach(r => {
+        if (r.bibtex.startsWith('%')) return;
+        const titleMatch = r.bibtex.match(/title\s*=\s*\{+([^}]+)\}+/);
+        if (!titleMatch) return;
+        const title = titleMatch[1].replace(/[{}]/g, '').toLowerCase();
+        title.split(/[\s\-_:,;().]+/).forEach(word => {
+            const clean = word.replace(/[^a-z0-9]/g, '');
+            if (clean.length < 4) return;
+            if (STOP_WORDS.has(clean)) return;
+            words[clean] = (words[clean] || 0) + 1;
+        });
+    });
+    // Top 6 most-repeated meaningful words across all titles
+    return Object.entries(words)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([word]) => word);
 }
 
-async function fetchSimilarPapers(paperIds) {
-    // Uses the current S2 recommendations POST API (batched)
-    try {
-        const res = await fetch(
-            'https://api.semanticscholar.org/recommendations/v1/papers/' +
-            '?fields=title,authors,year,venue,externalIds&limit=10',
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    positivePaperIds: paperIds,
-                    negativePaperIds: []
-                })
-            }
-        );
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.recommendedPapers || [];
-    } catch { return []; }
+async function searchS2ByKeywords(keywords) {
+    // Run two queries: broad (all keywords) + narrow (top 3), merge & dedupe
+    const queries = [...new Set([
+        keywords.join(' '),
+        keywords.slice(0, 3).join(' ')
+    ])];
+
+    const seen = new Map();
+
+    for (const query of queries) {
+        try {
+            const url = 'https://api.semanticscholar.org/graph/v1/paper/search' +
+                '?query=' + encodeURIComponent(query) +
+                '&fields=title,authors,year,venue,citationCount,externalIds' +
+                '&limit=25';
+            const res = await fetch(url);
+            if (!res.ok) continue;
+            const data = await res.json();
+            (data.data || []).forEach(p => {
+                if (p.paperId && !seen.has(p.paperId)) seen.set(p.paperId, p);
+            });
+        } catch { /* skip failed query */ }
+        await new Promise(r => setTimeout(r, 300));
+    }
+
+    // Sort by citation count descending, return top 15
+    return [...seen.values()]
+        .filter(p => p.citationCount != null)
+        .sort((a, b) => (b.citationCount || 0) - (a.citationCount || 0))
+        .slice(0, 15);
+}
+
+function getAlreadyFetchedDOIs() {
+    const dois = new Set();
+    state.results.forEach(r => {
+        if (r.raw && r.raw.DOI) dois.add(r.raw.DOI.toLowerCase());
+        const doiMatch = r.bibtex.match(/doi\s*=\s*\{([^}]+)\}/i);
+        if (doiMatch) dois.add(doiMatch[1].toLowerCase());
+    });
+    return dois;
 }
 
 async function fetchAndShowSimilarPapers() {
@@ -1919,28 +1955,27 @@ async function fetchAndShowSimilarPapers() {
     list.innerHTML = `
         <div class="similar-loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <span>Finding related papers from Semantic Scholar...</span>
+            <span>Finding highly-cited related papers...</span>
         </div>
     `;
     document.getElementById('addSelectedSuggestions').disabled = true;
 
-    // Resolve all S2 paper IDs first (individually, with polite delay)
-    const paperIds = [];
-    for (const result of state.results) {
-        if (result.bibtex.startsWith('%')) continue; // skip failed
-        const paperId = await resolveS2PaperId(result);
-        if (paperId) paperIds.push(paperId);
-        await new Promise(r => setTimeout(r, 300)); // polite delay between resolution calls
-    }
-
-    if (paperIds.length === 0) {
+    const keywords = extractKeywords(state.results);
+    if (keywords.length === 0) {
         renderSimilarPapers([]);
         return;
     }
 
-    // Single batched POST for all resolved IDs
-    const papers = await fetchSimilarPapers(paperIds);
-    renderSimilarPapers(papers);
+    const allPapers = await searchS2ByKeywords(keywords);
+
+    // Filter out papers the user already fetched
+    const alreadyHave = getAlreadyFetchedDOIs();
+    const filtered = allPapers.filter(p => {
+        const doi = (p.externalIds && p.externalIds.DOI) ? p.externalIds.DOI.toLowerCase() : '';
+        return !doi || !alreadyHave.has(doi);
+    });
+
+    renderSimilarPapers(filtered);
 }
 
 function renderSimilarPapers(papers) {
@@ -1990,6 +2025,7 @@ function renderSimilarPapers(papers) {
                         ${shown ? `<span class="suggestion-authors">${shown}${overflow}</span>` : ''}
                         ${paper.year ? `<span class="suggestion-year">${paper.year}</span>` : ''}
                         ${venue ? `<span class="suggestion-venue">${venue}</span>` : ''}
+                        ${paper.citationCount != null ? `<span class="suggestion-citations"><i class="fas fa-quote-right"></i> ${paper.citationCount.toLocaleString()} citations</span>` : ''}
                     </div>
                     ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> View paper</a>` : ''}
                 </div>

@@ -3199,3 +3199,18 @@ a:focus-visible {
     .suggest-toggle span { display: none; }
     .result-actions { flex-wrap: wrap; gap: 8px; }
 }
+.suggestion-citations {
+    font-size: 0.74rem;
+    background: rgba(6, 214, 160, 0.12);
+    color: #06a87e;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+[data-theme="dark"] .suggestion-citations {
+    background: rgba(6, 214, 160, 0.18);
+    color: #06d6a0;
+}
