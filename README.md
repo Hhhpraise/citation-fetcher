@@ -1,6 +1,6 @@
 # Citation Fetcher
 
-> A free, open-source web tool to automatically generate BibTeX citations for academic papers using Crossref and ArXiv APIs.
+> A free, open-source web tool to automatically generate BibTeX citations for academic papers using Crossref, ArXiv, and Semantic Scholar APIs.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://hhhpraise.github.io/citation-fetcher/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -10,21 +10,29 @@
 
 ## ✨ Features
 
-- 🚀 **Fast & Efficient** - Process multiple papers in seconds
-- 🎯 **Dual API Support** - Uses both Crossref and ArXiv APIs for maximum coverage
-- 📝 **Automatic Formatting** - Generates properly formatted BibTeX citations
-- 🔒 **Privacy First** - All processing happens in your browser
-- 💾 **Batch Processing** - Handle hundreds of papers at once
-- 📥 **Multiple Input Methods** - Paste titles or upload text files
-- ⚙️ **Customizable Settings** - Control processing speed and output format
-- 📱 **Responsive Design** - Works on desktop, tablet, and mobile
-- 🌐 **No Registration** - Free to use, no account required
+- 🚀 **Fast & Efficient** — Process multiple papers in seconds with automatic rate limiting
+- 🎯 **Triple API Support** — Crossref, ArXiv, and Semantic Scholar for maximum coverage
+- 🔍 **Smart Input Detection** — Automatically identifies titles, DOIs, and arXiv IDs — no manual switching needed
+- 📝 **Multiple Citation Formats** — Export as BibTeX, APA, MLA, Chicago, Harvard, or plain text
+- 🔒 **Privacy First** — All processing happens in your browser, nothing sent to our servers
+- 💾 **Batch Processing** — Handle hundreds of papers at once
+- 📥 **Multiple Input Methods** — Paste directly, upload `.txt` / `.bib` files, or drag and drop
+- 💡 **Related Paper Suggestions** — Discover highly-cited papers in the same research area via Semantic Scholar, with hover abstracts
+- 📋 **Per-line Validation** — Flags malformed DOIs and arXiv IDs before you hit Generate
+- 🕓 **Citation History** — Browse, reuse, and export previously fetched citations
+- ⚙️ **Customizable Settings** — API priority, delay, formatting options, retry logic
+- 🌙 **Dark Mode** — Full dark theme with persistent preference
+- 📱 **Responsive Design** — Works on desktop, tablet, and mobile
+- ⌨️ **Keyboard Shortcuts** — Power-user navigation without touching the mouse
+- 🌐 **No Registration** — Free to use, no account required
+- 📦 **PWA Ready** — Install as an app for offline access
+
 
 ## 🚀 Quick Start
 
 ### Online Usage
 
-Simply visit [https://hhhpraise.github.io/citation-fetcher/](https://hhhpraise.github.io/citation-fetcher/) and start generating citations!
+Visit [https://hhhpraise.github.io/citation-fetcher/](https://hhhpraise.github.io/citation-fetcher/) — no installation needed.
 
 ### Local Installation
 
@@ -36,50 +44,47 @@ Simply visit [https://hhhpraise.github.io/citation-fetcher/](https://hhhpraise.g
 
 2. **Open in browser**
    ```bash
-   # Simply open index.html in your browser
-   open index.html  # macOS
-   start index.html # Windows
-   xdg-open index.html # Linux
+   open index.html      # macOS
+   start index.html     # Windows
+   xdg-open index.html  # Linux
    ```
 
-   Or use a local server:
+   Or use a local server (recommended for service worker support):
    ```bash
-   # Python 3
-   python -m http.server 8000
-   
-   # Node.js
-   npx serve
+   python -m http.server 8000   # Python 3
+   npx serve                    # Node.js
    ```
 
-3. **Access the application**
-   - Open your browser and navigate to `http://localhost:8000`
+3. Navigate to `http://localhost:8000`
+
 
 ## 📖 How to Use
 
-### Method 1: Paste Paper Titles
+### Method 1: Paste Input
 
-1. Navigate to the **Input** tab
-2. Paste your paper titles (one per line) in the text area
-3. Click **Generate Citations**
-4. View results in the **Results** tab
-5. Copy to clipboard or download as `.bib` file
+1. Go to the **Input** tab
+2. Paste paper titles, DOIs, or arXiv IDs — one per line, mixed types supported
+3. Watch the live input type detector and per-line validation catch any issues
+4. Click **Generate Citations**
+5. View results in the **Results** tab — copy, download, or share
 
 ### Method 2: Upload a File
 
-1. Prepare a `.txt` file with paper titles (one per line)
-2. Click **Upload File** or drag and drop your file
+1. Prepare a `.txt` file (one entry per line) or an existing `.bib` file
+2. Drag and drop onto the upload area, or click **Choose File**
 3. Click **Generate Citations**
-4. Download or copy your formatted citations
 
 ### Example Input
 
 ```
 Attention Is All You Need
+10.48550/arXiv.1706.03762
+1706.03762v5
 BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding
 Deep Residual Learning for Image Recognition
-ImageNet Classification with Deep Convolutional Neural Networks
-Generative Adversarial Networks
 ```
+
+Mixed input types work — the tool detects each line independently.
 
 ### Example Output
 
@@ -101,25 +106,31 @@ Generative Adversarial Networks
 }
 ```
 
+
 ## ⚙️ Settings
 
-### Processing Speed
-- Control the delay between API requests (0.5s - 3.0s)
-- Prevents rate limiting for large batches
+| Setting | Description |
+|---|---|
+| **Processing Speed** | Delay between API requests (0.5s–3.0s) to avoid rate limiting |
+| **API Priority** | Choose Crossref, ArXiv, or Auto-detect per line |
+| **Retry Attempts** | How many times to retry a failed request before giving up |
+| **Output Format** | Pretty indentation, alphabetical sort, include comments |
+| **Crossref Email** | Optional — increases your priority in Crossref's polite pool |
+| **Dark Mode** | Toggle via header button, floating button, or `Ctrl+D` |
+| **Keyboard Shortcuts** | Can be disabled if they conflict with browser shortcuts |
 
-### API Priority
-- **Crossref** (default) - More accurate for published papers
-- **ArXiv** - Faster for preprints and recent papers
 
-### Output Format
-- Pretty indentation
-- Sort entries alphabetically
-- Include helpful comments
+## ⌨️ Keyboard Shortcuts
 
-### Crossref Email (Optional)
-- Provide your email for polite API usage
-- Required for high-volume usage
-- Increases priority in Crossref's request queue
+| Shortcut | Action |
+|---|---|
+| `Ctrl + Enter` | Generate Citations |
+| `Ctrl + S` | Open Settings |
+| `Ctrl + H` | Open History |
+| `Ctrl + D` | Toggle Dark Mode |
+| `Escape` | Clear All |
+| `?` | Show / Hide shortcut help |
+
 
 ## 🔧 Technical Details
 
@@ -128,159 +139,145 @@ Generative Adversarial Networks
 #### Crossref API
 - **Endpoint**: `https://api.crossref.org/works`
 - **Coverage**: 140+ million records from thousands of publishers
-- **Best for**: Published journal articles, conference papers
-- **Documentation**: [Crossref REST API](https://www.crossref.org/services/metadata-delivery/rest-api/)
+- **Best for**: Published journal articles, conference papers, direct DOI lookup
+- **Docs**: [Crossref REST API](https://www.crossref.org/services/metadata-delivery/rest-api/)
 
 #### ArXiv API
 - **Endpoint**: `https://export.arxiv.org/api/query`
 - **Coverage**: 2+ million preprints
-- **Best for**: Physics, Mathematics, Computer Science preprints
-- **Documentation**: [ArXiv API User Manual](https://arxiv.org/help/api)
+- **Best for**: Physics, Mathematics, Computer Science preprints; direct arXiv ID lookup
+- **Docs**: [ArXiv API User Manual](https://arxiv.org/help/api)
+
+#### Semantic Scholar API
+- **Endpoint**: `https://api.semanticscholar.org/graph/v1`
+- **Coverage**: 200+ million papers with citation graphs
+- **Used for**: Fallback citation fetch + Related Paper Suggestions with abstracts
+- **Docs**: [Semantic Scholar API](https://api.semanticscholar.org/)
 
 ### Technology Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Styling**: Custom CSS with responsive design
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (no build step, no framework)
 - **Icons**: Font Awesome 6.4.0
 - **Fonts**: Google Fonts (Poppins, Roboto Mono)
-- **APIs**: Crossref REST API, ArXiv API
+- **Storage**: localStorage only — preferences, history, nothing else
+- **PWA**: Service Worker + Web App Manifest
 
 ### Browser Compatibility
 
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Opera 76+
+| Browser | Minimum Version |
+|---|---|
+| Chrome / Edge | 90+ |
+| Firefox | 88+ |
+| Safari | 14+ |
+| Opera | 76+ |
+
 
 ## 📁 Project Structure
 
 ```
 citation-fetcher/
-├── index.html          # Main HTML file
-├── style.css           # Styling and responsive design
-├── script.js           # Application logic and API integration
+├── index.html          # Main application shell
+├── style.css           # All styles, dark mode, responsive layout
+├── script.js           # Application logic, API calls, UI state
 ├── manifest.json       # PWA manifest
-├── icon.png           # Application icon
-├── screenshot.png     # Screenshot for README
-└── README.md          # This file
+├── service-worker.js   # Offline caching
+├── icon.png            # App icon
+└── README.md           # This file
 ```
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add some amazing feature'
-   ```
-4. **Push to the branch**
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
-### Development Guidelines
-
-- Follow existing code style and formatting
-- Test thoroughly before submitting PR
-- Update documentation for new features
-- Add comments for complex logic
-- Ensure mobile responsiveness
 
 ## 🐛 Known Issues & Limitations
 
-- **API Rate Limits**: Crossref recommends max 50 requests/second
-- **Fuzzy Matching**: Title matching isn't always perfect - try simplifying titles
-- **Special Characters**: Some non-ASCII characters may not be handled correctly
-- **Network Required**: Requires internet connection to access APIs
-- **Browser Storage**: Settings are stored in localStorage (cleared when cache is cleared)
+- **Title Fuzzy Matching**: If a title doesn't match exactly, try removing subtitles or special characters
+- **ArXiv-only Papers**: Some very new preprints only exist on ArXiv and won't resolve via Crossref
+- **Semantic Scholar Rate Limits**: The Related Papers feature may be slow for large batches — this is an upstream API constraint
+- **PDF Extraction**: Uploading `.pdf` files is a placeholder — full text extraction requires pdf.js integration (planned)
+- **Network Required**: All API calls go to external services; offline mode only serves the cached app shell
+
 
 ## 🛣️ Roadmap
 
-- [ ] Add support for DOI input
-- [ ] Support for more citation formats (APA, MLA, Chicago)
-- [ ] Bulk DOI lookup
-- [ ] Export to RIS format
-- [ ] Integration with Zotero/Mendeley
-- [ ] Dark mode support
-- [ ] Citation preview before download
-- [ ] Duplicate detection
-- [ ] Advanced search filters
-- [ ] Browser extension
+### ✅ Shipped
+- [x] DOI and arXiv ID direct lookup
+- [x] Multiple citation formats (BibTeX, APA, MLA, Chicago, Harvard, Plain Text)
+- [x] Bulk / batch processing
+- [x] Dark mode
+- [x] Citation preview per result with inline source badge and year
+- [x] Related paper suggestions with abstract hover tooltips (Semantic Scholar)
+- [x] Per-line input validation (flags malformed DOIs before generating)
+- [x] Citation history with reuse and export
+- [x] PWA / offline support
+- [x] Keyboard shortcuts
+
+### 🔜 Up Next
+- [ ] **Browser Extension** — One-click BibTeX from any journal page or arXiv abstract *(in development)*
+- [ ] Export to RIS format (Zotero / Mendeley compatible)
+- [ ] Zotero / Mendeley direct integration via their APIs
+- [ ] Duplicate detection across a batch
+- [ ] Advanced search filters (year range, venue, author)
+- [ ] PDF text extraction via pdf.js for `.pdf` uploads
+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add your feature'`
+4. Push: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+Please test on both light and dark modes, and on mobile viewport widths before submitting.
+
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE) for details.
+
 
 ## 👤 Author
 
 **Praise O. Arowolo**
 
 - GitHub: [@Hhhpraise](https://github.com/Hhhpraise)
+- Portfolio: [hhhpraise.github.io/portfolio](https://hhhpraise.github.io/portfolio/)
 - Repository: [citation-fetcher](https://github.com/Hhhpraise/citation-fetcher)
+
 
 ## 🙏 Acknowledgments
 
-- [Crossref](https://www.crossref.org/) for providing free access to their API
-- [ArXiv](https://arxiv.org/) for their open access preprint repository
-- [Font Awesome](https://fontawesome.com/) for the icon library
-- [Google Fonts](https://fonts.google.com/) for the typography
-- All contributors and users of this tool
+- [Crossref](https://www.crossref.org/) — free metadata API
+- [ArXiv](https://arxiv.org/) — open access preprint repository
+- [Semantic Scholar](https://www.semanticscholar.org/) — AI-powered academic search
+- [Font Awesome](https://fontawesome.com/) — icon library
+- [Google Fonts](https://fonts.google.com/) — typography
 
-## 📊 Statistics
-
-- **Total APIs**: 2 (Crossref + ArXiv)
-- **Coverage**: 140+ million academic papers
-- **Processing Speed**: ~1-3 seconds per paper
-- **Success Rate**: ~85-95% (depends on title accuracy)
 
 ## ❓ FAQ
 
-**Q: Why do some papers fail to fetch?**  
-A: This usually happens when the title doesn't exactly match what's in the database. Try simplifying the title or removing subtitles.
+**Q: Why do some papers fail to fetch?**
+Papers fail when the title doesn't closely match the database entry. Try simplifying the title, removing subtitles, or using a DOI directly — DOIs always resolve exactly.
 
-**Q: Can I use this for commercial purposes?**  
-A: Yes! This tool is MIT licensed and free to use for any purpose.
+**Q: Why is DOI input more reliable than title input?**
+DOIs are unique identifiers — one DOI maps to exactly one paper. Title search is fuzzy and can return the wrong paper if the title is common or slightly different from the indexed version.
 
-**Q: Do you store my paper titles?**  
-A: No! Everything is processed client-side in your browser. We don't have any servers.
+**Q: Can I use this commercially?**
+Yes. MIT licensed — use it however you want.
 
-**Q: What's the difference between Crossref and ArXiv?**  
-A: Crossref covers published journal articles from most publishers. ArXiv specializes in preprints (unpublished papers) especially in physics, math, and computer science.
+**Q: Do you store my paper titles or citation data?**
+No. Everything runs in your browser. The only external requests go directly to Crossref, ArXiv, and Semantic Scholar.
 
-**Q: Can I process thousands of papers at once?**  
-A: While technically possible, we recommend batches of 50-100 to avoid rate limiting and browser performance issues.
+**Q: How large can a batch be?**
+There's a soft cap of 100 papers per batch. Larger batches work technically but risk hitting API rate limits and slowing down significantly. For bulk work, increase the delay setting to 2–3s.
 
-## 🔗 Related Projects
+**Q: What's the Related Papers feature?**
+After generating, if you enable "Suggest Similar Papers," the tool queries Semantic Scholar with keywords extracted from your paper titles and returns the most-cited papers in the same area. You can hover each suggestion to read its abstract, check the ones you want, and add them to your input queue for citation generation.
 
-- [Crossref Metadata Search](https://search.crossref.org/)
-- [Google Scholar](https://scholar.google.com/)
-- [Semantic Scholar](https://www.semanticscholar.org/)
-- [CiteSeerX](https://citeseerx.ist.psu.edu/)
 
 ## 💬 Support
 
-If you encounter any issues or have questions:
-
-1. Check the [FAQ section](#-faq) above
+1. Check the [FAQ](#-faq) above
 2. Search [existing issues](https://github.com/Hhhpraise/citation-fetcher/issues)
-3. Open a [new issue](https://github.com/Hhhpraise/citation-fetcher/issues/new) if needed
-
-## ⭐ Show Your Support
-
-If you find this tool useful, please consider:
-
-- ⭐ Starring the repository
-- 🐛 Reporting bugs
-- 💡 Suggesting new features
-- 🔀 Contributing code
-- 📢 Sharing with colleagues
+3. Open a [new issue](https://github.com/Hhhpraise/citation-fetcher/issues/new)
 
 ---
 
