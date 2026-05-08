@@ -648,19 +648,19 @@ async function processPapers() {
     state.isProcessing = false;
     displayResults();
 
-    // Trigger similar papers if checkbox is on
-    const suggestEl = document.getElementById('suggestSimilar');
-    if (suggestEl && suggestEl.checked && state.stats.success > 0) {
-        fetchAndShowSimilarPapers();
-    } else {
-        document.getElementById('similarPapersSection')?.classList.add('hidden');
-    }
-
-    // Update UI
+    // Always fetch similar papers when there are successful results.
+    // Switch to results tab first so the user sees everything in one place.
     elements.generateBtn.disabled = false;
     elements.generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Citations';
     elements.progressContainer.classList.add('hidden');
     elements.bibtexOutput.classList.remove('hidden');
+
+    if (state.stats.success > 0) {
+        switchTab('results');
+        fetchAndShowSimilarPapers();
+    } else {
+        document.getElementById('similarPapersSection')?.classList.add('hidden');
+    }
 
     const successRate = Math.round((state.stats.success / lines.length) * 100);
     showToast(`Completed! ${state.stats.success} successful, ${state.stats.failed} failed (${successRate}% success rate)`,
