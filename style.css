@@ -4096,6 +4096,8 @@ a:focus-visible {
     flex: 1;
     min-width: 180px;
     position: relative;
+    display: flex;
+    gap: 0;
 }
 .history-search i {
     position: absolute;
@@ -4108,10 +4110,11 @@ a:focus-visible {
     z-index: 1;
 }
 .history-search input {
-    width: 100%;
+    flex: 1;
     padding: 8px 12px 8px 32px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border-right: none;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
     font-family: var(--font-display);
     font-size: 0.84rem;
     background: var(--surface);
@@ -4127,10 +4130,23 @@ a:focus-visible {
     color: var(--gray);
     opacity: 0.7;
 }
+.btn-search {
+    flex-shrink: 0;
+    padding: 8px 14px !important;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+    background: var(--primary) !important;
+    color: #030c18 !important;
+    border: 1px solid var(--primary) !important;
+    cursor: pointer;
+}
+.btn-search:hover {
+    background: var(--primary-dark) !important;
+}
 .history-filters {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+    align-items: center;
 }
 .history-filters select {
     padding: 8px 28px 8px 10px;
@@ -4312,10 +4328,14 @@ a:focus-visible {
     .history-filters {
         flex-direction: row;
         flex-wrap: wrap;
+        width: 100%;
     }
     .history-filters select {
         flex: 1;
-        min-width: 120px;
+        min-width: 100px;
+    }
+    .btn-search {
+        padding: 8px 12px !important;
     }
     .dedup-panel {
         flex-direction: column;
@@ -4333,3 +4353,4 @@ a:focus-visible {
 [data-theme="dark"] .folder-select { background: var(--surface-2); color: var(--dark); }
 [data-theme="dark"] .folder-chip { background: var(--surface-2); }
 [data-theme="dark"] .bookmarklet-card { background: var(--surface); }
+[data-theme="dark"] .btn-search { background: var(--primary) !important; color: #030c18 !important; }

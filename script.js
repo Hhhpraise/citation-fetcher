@@ -103,6 +103,8 @@ const elements = {
     clearHistory: document.getElementById('clearHistory'),
     exportHistory: document.getElementById('exportHistory'),
     historySearch: document.getElementById('historySearch'),
+    historySearchBtn: document.getElementById('historySearchBtn'),
+    historyClearSearch: document.getElementById('historyClearSearch'),
     historySourceFilter: document.getElementById('historySourceFilter'),
     historySortOrder: document.getElementById('historySortOrder'),
     folderChips: document.getElementById('folderChips'),
@@ -1029,10 +1031,14 @@ function loadHistory() {
 function renderHistoryList() {
     const historyList = elements.historyList;
 
-    // Apply filters
-    const searchTerm = (elements.historySearch?.value || '').toLowerCase();
-    const sourceFilter = elements.historySourceFilter?.value || 'all';
-    const sortOrder = elements.historySortOrder?.value || 'newest';
+    // Read filter values directly from DOM for reliability
+    const searchInput  = document.getElementById('historySearch');
+    const sourceFilter = document.getElementById('historySourceFilter');
+    const sortOrder    = document.getElementById('historySortOrder');
+
+    const searchTerm = (searchInput?.value || '').toLowerCase().trim();
+    const sourceVal  = sourceFilter?.value || 'all';
+    const sortVal    = sortOrder?.value || 'newest';
 
     // Get active folder
     const activeChip = document.querySelector('.folder-chip.active');
@@ -1061,13 +1067,13 @@ function renderHistoryList() {
     }
 
     // Source filter
-    if (sourceFilter && sourceFilter !== 'all') {
-        filtered = filtered.filter(item => item.source === sourceFilter);
+    if (sourceVal && sourceVal !== 'all') {
+        filtered = filtered.filter(item => item.source === sourceVal);
     }
 
     // Sort
-    if (sortOrder === 'oldest') filtered.reverse();
-    else if (sortOrder === 'az') {
+    if (sortVal === 'oldest') filtered.reverse();
+    else if (sortVal === 'az') {
         filtered.sort((a, b) => {
             const ta = (a.bibtex.match(/title\s*=\s*\{([^}]+)\}/)?.[1] || a.input || '').toLowerCase();
             const tb = (b.bibtex.match(/title\s*=\s*\{([^}]+)\}/)?.[1] || b.input || '').toLowerCase();
@@ -1076,7 +1082,7 @@ function renderHistoryList() {
     }
 
     if (filtered.length === 0) {
-        const hasFilters = searchTerm || sourceFilter !== 'all' || (activeFolder && activeFolder !== 'all');
+        const hasFilters = searchTerm || sourceVal !== 'all' || (activeFolder && activeFolder !== 'all');
         historyList.innerHTML = `
             <div class="empty-history">
                 <i class="fas fa-${state.history.length === 0 ? 'history' : 'search'} fa-3x"></i>
@@ -1096,7 +1102,7 @@ function renderHistoryList() {
 
     // Show result count when filtering
     let resultInfo = '';
-    if (searchTerm || sourceFilter !== 'all' || (activeFolder && activeFolder !== 'all')) {
+    if (searchTerm || sourceVal !== 'all' || (activeFolder && activeFolder !== 'all')) {
         resultInfo = `<div class="history-result-info">Showing ${filtered.length} of ${state.history.length} citation${state.history.length !== 1 ? 's' : ''}</div>`;
     }
 
@@ -3096,16 +3102,25 @@ function setupEventListeners() {
         renderFolderChips();
     });
 
-    // History search/filter/sort
-    if (elements.historySearch) {
-        elements.historySearch.addEventListener('input', debounce(() => renderHistoryList(), 250));
-    }
-    if (elements.historySourceFilter) {
-        elements.historySourceFilter.addEventListener('change', () => renderHistoryList());
-    }
-    if (elements.historySortOrder) {
-        elements.historySortOrder.addEventListener('change', () => renderHistoryList());
-    }
+    // History search/filter/sort — use direct DOM queries for reliability
+    (function bindHistoryControls() {
+        const searchInput = document.getElementById('historySearch');
+        const searchBtn   = document.getElementById('historySearchBtn');
+        const clearBtn    = document.getElementById('historyClearSearch');
+        const sourceSel   = document.getElementById('historySourceFilter');
+        const sortSel     = document.getElementById('historySortOrder');
+
+        function doSearch() { renderHistoryList(); }
+
+        if (searchBtn)   searchBtn.addEventListener('click', doSearch);
+        if (searchInput) searchInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
+        if (searchInput) searchInput.addEventListener('input', debounce(doSearch, 300));
+        if (clearBtn)    clearBtn.addEventListener('click', function() {
+            if (searchInput) { searchInput.value = ''; doSearch(); }
+        });
+        if (sourceSel)   sourceSel.addEventListener('change', doSearch);
+        if (sortSel)     sortSel.addEventListener('change', doSearch);
+    })();
 }
 
 // ===========================

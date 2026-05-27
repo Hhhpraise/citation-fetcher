@@ -472,7 +472,10 @@ Examples:
                     <div class="history-toolbar">
                         <div class="history-search">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="historySearch" placeholder="Search history by title, author, or source..." autocomplete="off">
+                            <input type="text" id="historySearch" placeholder="Search by title, author, or source..." autocomplete="off">
+                            <button class="btn-small btn-search" id="historySearchBtn" title="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
                         <div class="history-filters">
                             <select id="historySourceFilter">
@@ -486,6 +489,9 @@ Examples:
                                 <option value="oldest">Oldest First</option>
                                 <option value="az">A-Z</option>
                             </select>
+                            <button class="btn-small btn-outline-sm" id="historyClearSearch" title="Clear search">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
                         </div>
                         <div class="history-folders-bar">
                             <span class="folder-label"><i class="fas fa-folder"></i> Folders:</span>
