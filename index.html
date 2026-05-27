@@ -2,15 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Free online tool to generate BibTeX citations for academic papers from Crossref and ArXiv APIs">
-    <title>Citation Fetcher - Free BibTeX Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Free online BibTeX citation generator for academic papers. Convert DOIs, arXiv IDs, or paper titles into formatted BibTeX, APA, MLA, Chicago, Harvard & RIS citations instantly using Crossref, ArXiv & Semantic Scholar APIs.">
+    <meta name="keywords" content="BibTeX generator, citation generator, DOI to BibTeX, arXiv to BibTeX, academic citation tool, reference generator, citation converter, BibTeX citation, research tool, LaTeX citation">
+    <meta name="author" content="Praise O. Arowolo">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://hhhpraise.github.io/citation-fetcher/">
+    <meta property="og:title" content="Citation Fetcher - Free BibTeX Citation Generator">
+    <meta property="og:description" content="Generate properly formatted BibTeX citations from paper titles, DOIs, or arXiv IDs. Supports APA, MLA, Chicago, Harvard & RIS formats. Free, no registration required.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hhhpraise.github.io/citation-fetcher/">
+    <meta property="og:image" content="https://github.com/Hhhpraise.png">
+    <meta property="og:site_name" content="Citation Fetcher">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Citation Fetcher - Free BibTeX Citation Generator">
+    <meta name="twitter:description" content="Generate properly formatted BibTeX citations from paper titles, DOIs, or arXiv IDs. Free, no registration required.">
+    <meta name="twitter:image" content="https://github.com/Hhhpraise.png">
+    <meta name="twitter:creator" content="@ArowoloPraise">
+    <title>Citation Fetcher - Free BibTeX Citation Generator | DOI, arXiv & Title to BibTeX</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#00c8ff">
+    <!-- Prevent dark mode FOUC: set theme before paint -->
+    <script>
+      (function(){try{var t=JSON.parse(localStorage.getItem('citationFetcherSettings')||'{}');if(t.enableDarkMode)document.body.setAttribute('data-theme','dark');}catch(e){}})();
+    </script>
+    <!-- Structured data for search engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Citation Fetcher",
+      "url": "https://hhhpraise.github.io/citation-fetcher/",
+      "description": "Free online BibTeX citation generator for academic papers using Crossref, ArXiv and Semantic Scholar APIs.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0" },
+      "author": { "@type": "Person", "name": "Praise O. Arowolo", "url": "https://hhhpraise.github.io/portfolio/" }
+    }
+    </script>
     <!-- Manifest for PWA -->
     <link rel="manifest" href="manifest.json">
 </head>
@@ -30,6 +61,7 @@
                     <a href="#home" class="nav-link active">Home</a>
                     <a href="#features" class="nav-link">Features</a>
                     <a href="#how-to" class="nav-link">How To</a>
+                    <a href="#bookmarklet" class="nav-link">Bookmarklet</a>
                     <a href="#api" class="nav-link">API Info</a>
                     <a href="#history" class="nav-link" id="historyNavLink">
                         <i class="fas fa-history"></i> History
@@ -137,14 +169,15 @@
                 <div class="hero-image">
                     <div class="floating-card">
                         <i class="fas fa-quote-left"></i>
-                        <p>Saved me hours of manual citation work! The smart detection features are amazing.</p>
+                        <p class="testimonial-quote">Saved me hours of manual citation work! The smart detection features are amazing.</p>
                         <div class="user">
                             <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
                             <div>
-                                <h4>Dr. A. Rahman</h4>
-                                <p>Researcher, MIT</p>
+                                <h4 class="testimonial-name">Dr. A. Rahman</h4>
+                                <p class="testimonial-role">Researcher, MIT</p>
                             </div>
                         </div>
+                        <span class="testimonial-disclaimer">example testimonial</span>
                     </div>
                 </div>
             </div>
@@ -209,19 +242,34 @@ Examples:
                                 <div class="line-validation-summary" id="lineValidationSummary"></div>
                                 <div class="line-validation-issues hidden" id="lineValidationIssues"></div>
                             </div>
+                            <!-- Deduplication warning -->
+                            <div class="dedup-panel hidden" id="dedupPanel">
+                                <div class="dedup-summary">
+                                    <i class="fas fa-clone"></i>
+                                    <span id="dedupSummary"></span>
+                                </div>
+                                <div class="dedup-actions">
+                                    <button class="btn-small" id="dedupRemoveBtn">
+                                        <i class="fas fa-filter"></i> Remove Duplicates
+                                    </button>
+                                    <button class="btn-small btn-outline-sm" id="dedupDismissBtn">
+                                        <i class="fas fa-times"></i> Keep All
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="method-card" id="method-file">
                             <i class="fas fa-file-upload"></i>
                             <h3>Upload File</h3>
-                            <p>Upload .txt, .pdf, or .bib files</p>
+                            <p>Upload .txt or .bib files (PDF support coming soon)</p>
                             <div class="file-upload-area" id="fileUploadArea" role="button" tabindex="0" aria-label="Upload file area">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <p>Drag & drop your file here or</p>
                                 <label for="fileInput" class="file-btn" role="button">
                                     <i class="fas fa-folder-open"></i> Choose File
                                 </label>
-                                <input type="file" id="fileInput" accept=".txt,.pdf,.bib">
-                                <p class="file-hint">Supports .txt, .pdf, and .bib files</p>
+                                <input type="file" id="fileInput" accept=".txt,.bib">
+                                <p class="file-hint">Supports .txt and .bib files</p>
                             </div>
                             <div id="fileInfo" class="hidden">
                                 <div class="file-info-content">
@@ -241,6 +289,9 @@ Examples:
                     <div class="action-buttons">
                         <button id="generateBtn" class="btn-primary">
                             <i class="fas fa-bolt"></i> Generate Citations
+                        </button>
+                        <button id="cancelBtn" class="btn-danger hidden">
+                            <i class="fas fa-stop"></i> Cancel Processing
                         </button>
                         <button id="exampleBtn" class="btn-secondary">
                             <i class="fas fa-eye"></i> Load Example
@@ -264,6 +315,7 @@ Examples:
                             <div class="export-format">
                                 <select id="exportFormat">
                                     <option value="bibtex">BibTeX</option>
+                                    <option value="ris">RIS</option>
                                     <option value="apa">APA</option>
                                     <option value="mla">MLA</option>
                                     <option value="chicago">Chicago</option>
@@ -370,6 +422,22 @@ Examples:
                         </div>
                         <div class="similar-papers-list" id="similarPapersList"></div>
                     </div>
+
+                    <!-- Shareable Link Panel -->
+                    <div class="share-panel hidden" id="sharePanel">
+                        <div class="share-panel-header">
+                            <h4><i class="fas fa-link"></i> Shareable Citation Link</h4>
+                            <button class="btn-small btn-outline-sm" id="closeSharePanel"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="share-panel-body">
+                            <p>Copy this link to share your citation list. Anyone with the link can load these papers into Citation Fetcher.</p>
+                            <div class="share-input-row">
+                                <input type="text" id="shareLinkInput" readonly>
+                                <button class="btn-primary" id="copyShareLink"><i class="fas fa-copy"></i> Copy</button>
+                            </div>
+                            <small class="share-note"><i class="fas fa-info-circle"></i> No data is stored on servers — the link encodes your paper list.</small>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- History Tab -->
@@ -397,6 +465,32 @@ Examples:
                         <div class="stat-item">
                             <i class="fas fa-chart-bar"></i>
                             <span>Success Rate: <span id="historySuccessRate">0%</span></span>
+                        </div>
+                    </div>
+                    <div class="history-toolbar">
+                        <div class="history-search">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="historySearch" placeholder="Search history by title, author, or source..." autocomplete="off">
+                        </div>
+                        <div class="history-filters">
+                            <select id="historySourceFilter">
+                                <option value="all">All Sources</option>
+                                <option value="crossref">Crossref</option>
+                                <option value="arxiv">ArXiv</option>
+                                <option value="semantic">Semantic Scholar</option>
+                            </select>
+                            <select id="historySortOrder">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="az">A-Z</option>
+                            </select>
+                        </div>
+                        <div class="history-folders-bar">
+                            <span class="folder-label"><i class="fas fa-folder"></i> Folders:</span>
+                            <div class="folder-chips" id="folderChips">
+                                <button class="folder-chip active" data-folder="all">All</button>
+                            </div>
+                            <button class="btn-small" id="newFolderBtn" title="Create new folder"><i class="fas fa-plus"></i> New</button>
                         </div>
                     </div>
                     <div class="history-container">
@@ -612,6 +706,24 @@ Examples:
         </div>
     </section>
 
+    <!-- Bookmarklet Section -->
+    <section class="bookmarklet" id="bookmarklet">
+        <div class="container">
+            <h2 class="section-title">Browser Bookmarklet</h2>
+            <p class="section-subtitle">Drag this button to your bookmarks bar. Click it on any journal page, arXiv abstract, or paper URL to instantly open Citation Fetcher with the paper pre-filled.</p>
+            <div class="bookmarklet-card">
+                <a class="bookmarklet-btn" href="javascript:(function(){var t=document.title;var d=document.querySelector('meta[name=citation_doi]')||document.querySelector('meta[name=dc.identifier]');var doi=d?d.content:'';var u=doi||t||window.location.href;window.open('https://hhhpraise.github.io/citation-fetcher/#'+encodeURIComponent(u))})();" onclick="event.preventDefault();showToast('Drag this button to your bookmarks bar!','info',6000);">
+                    <i class="fas fa-graduation-cap"></i> Cite This!
+                </a>
+                <div class="bookmarklet-instructions">
+                    <p><i class="fas fa-mouse-pointer"></i> <strong>Drag</strong> the "Cite This!" button to your browser's bookmarks bar.</p>
+                    <p><i class="fas fa-globe"></i> When browsing a journal page or arXiv abstract, <strong>click the bookmarklet</strong>.</p>
+                    <p><i class="fas fa-magic"></i> Citation Fetcher opens with the paper's DOI or title pre-filled.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- API Info Section -->
     <section class="api-info" id="api">
         <div class="container">
@@ -750,11 +862,11 @@ Examples:
                         <i class="fas fa-paper-plane"></i> Subscribe
                     </button>
                 </form>
-                <small>No spam, unsubscribe anytime</small>
+                <small>Coming soon — newsletter signup is not yet active.</small>
             </div>
 
             <div class="footer-bottom">
-                <p>© 2026 Citation Fetcher v2.0. An open-source project. Not affiliated with Crossref or ArXiv.</p>
+                <p>© 2026 Citation Fetcher v2.1. An open-source project. Not affiliated with Crossref or ArXiv.</p>
                 <p>Made with <i class="fas fa-heart"></i> for researchers worldwide</p>
             </div>
         </div>
@@ -822,6 +934,70 @@ Examples:
 
     <!-- Scripts -->
     <script src="script.js"></script>
+
+    <!-- Inline BibTeX Editor Modal -->
+    <div class="modal hidden" id="editorModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Citation</h3>
+                <button class="modal-close" id="closeEditor">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="editor-grid">
+                    <div class="editor-fields">
+                        <label>Type</label>
+                        <select id="editType"><option value="article">article</option><option value="inproceedings">inproceedings</option><option value="book">book</option><option value="misc">misc</option><option value="techreport">techreport</option></select>
+                        <label>Citation Key</label>
+                        <input type="text" id="editKey" placeholder="citation-key">
+                        <label>Author</label>
+                        <input type="text" id="editAuthor" placeholder="Last, First and Last, First">
+                        <label>Title</label>
+                        <input type="text" id="editTitle" placeholder="Paper Title">
+                        <label>Journal / Venue</label>
+                        <input type="text" id="editJournal" placeholder="Journal name">
+                        <label>Year</label>
+                        <input type="text" id="editYear" placeholder="2024">
+                        <label>Volume</label>
+                        <input type="text" id="editVolume" placeholder="Volume">
+                        <label>Number</label>
+                        <input type="text" id="editNumber" placeholder="Issue number">
+                        <label>Pages</label>
+                        <input type="text" id="editPages" placeholder="1-10">
+                        <label>DOI</label>
+                        <input type="text" id="editDOI" placeholder="10.xxxx/xxxxx">
+                        <label>Publisher</label>
+                        <input type="text" id="editPublisher" placeholder="Publisher name">
+                    </div>
+                    <div class="editor-preview">
+                        <label>Live BibTeX Preview</label>
+                        <pre id="editBibtexPreview"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" id="closeEditorBottom">Cancel</button>
+                <button class="btn-primary" id="saveEditor"><i class="fas fa-save"></i> Save & Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Folder Creation Modal -->
+    <div class="modal hidden" id="folderModal">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder-plus"></i> New Folder</h3>
+                <button class="modal-close" id="closeFolder">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="folderNameInput">Folder Name</label>
+                <input type="text" id="folderNameInput" placeholder="e.g., Thesis References, ML Papers">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" id="closeFolderBottom">Cancel</button>
+                <button class="btn-primary" id="createFolderBtn"><i class="fas fa-plus"></i> Create Folder</button>
+            </div>
+        </div>
+    </div>
 
 <!-- QR Code Modal -->
 <div class="modal hidden" id="qrModal">

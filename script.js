@@ -49,6 +49,7 @@ const elements = {
     fileCount: document.getElementById('fileCount'),
     clearFile: document.getElementById('clearFile'),
     generateBtn: document.getElementById('generateBtn'),
+    cancelBtn: document.getElementById('cancelBtn'),
     exampleBtn: document.getElementById('exampleBtn'),
     clearBtn: document.getElementById('clearBtn'),
     undoBtn: document.getElementById('undoBtn'),
@@ -101,6 +102,11 @@ const elements = {
     historyList: document.getElementById('historyList'),
     clearHistory: document.getElementById('clearHistory'),
     exportHistory: document.getElementById('exportHistory'),
+    historySearch: document.getElementById('historySearch'),
+    historySourceFilter: document.getElementById('historySourceFilter'),
+    historySortOrder: document.getElementById('historySortOrder'),
+    folderChips: document.getElementById('folderChips'),
+    newFolderBtn: document.getElementById('newFolderBtn'),
 
     // UI elements
     inputTypeIndicator: document.getElementById('inputTypeIndicator'),
@@ -126,7 +132,32 @@ const elements = {
     donateBtn: document.getElementById('donateBtn'),
     newsletterForm: document.getElementById('newsletterForm'),
     offlineStatus: document.getElementById('offlineStatus'),
-    appVersion: document.getElementById('appVersion')
+    appVersion: document.getElementById('appVersion'),
+
+    // Share
+    sharePanel: document.getElementById('sharePanel'),
+    shareLinkInput: document.getElementById('shareLinkInput'),
+    copyShareLink: document.getElementById('copyShareLink'),
+    closeSharePanel: document.getElementById('closeSharePanel'),
+
+    // Dedup
+    dedupPanel: document.getElementById('dedupPanel'),
+    dedupSummary: document.getElementById('dedupSummary'),
+    dedupRemoveBtn: document.getElementById('dedupRemoveBtn'),
+    dedupDismissBtn: document.getElementById('dedupDismissBtn'),
+
+    // Editor
+    editorModal: document.getElementById('editorModal'),
+    closeEditor: document.getElementById('closeEditor'),
+    closeEditorBottom: document.getElementById('closeEditorBottom'),
+    saveEditor: document.getElementById('saveEditor'),
+
+    // Folder modal
+    folderModal: document.getElementById('folderModal'),
+    folderNameInput: document.getElementById('folderNameInput'),
+    closeFolder: document.getElementById('closeFolder'),
+    closeFolderBottom: document.getElementById('closeFolderBottom'),
+    createFolderBtn: document.getElementById('createFolderBtn')
 };
 
 // ===========================
@@ -262,6 +293,7 @@ function updatePaperCount() {
         const type = detectInputType(text);
         updateInputTypeUI(type);
         validateInputLines(lines);
+        showDedupWarning(lines);
     } else {
         elements.inputTypeIndicator.textContent = 'Waiting for input...';
         const panel = document.getElementById('lineValidation');
@@ -359,7 +391,6 @@ async function fetchFromCrossref(title, type = 'title') {
         }
         return null;
     } catch (error) {
-        console.error('Crossref error:', error);
         return null;
     }
 }
@@ -392,7 +423,6 @@ async function fetchFromArxiv(id, type = 'title') {
         }
         return null;
     } catch (error) {
-        console.error('ArXiv error:', error);
         return null;
     }
 }
@@ -419,12 +449,12 @@ async function fetchFromSemanticScholar(title, type = 'title') {
             return {
                 bibtex: convertSemanticToBibtex(paper),
                 raw: paper,
-                source: 'semantic'
+                source: 'semantic',
+                citationCount: paper.citationCount || null
             };
         }
         return null;
     } catch (error) {
-        console.error('Semantic Scholar error:', error);
         return null;
     }
 }
@@ -563,8 +593,8 @@ async function processPapers() {
     state.paperInputs = lines;
 
     // Update UI
-    elements.generateBtn.disabled = true;
-    elements.generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    elements.generateBtn.classList.add('hidden');
+    elements.cancelBtn.classList.remove('hidden');
     elements.progressContainer.classList.remove('hidden');
     elements.bibtexOutput.classList.add('hidden');
     updateStats();
@@ -617,13 +647,13 @@ async function processPapers() {
             try {
                 result = await attempt();
             } catch (error) {
-                console.error('Fetch attempt failed:', error);
+                // Fetch attempt failed, try next
             }
         }
 
         // Store result
         if (result) {
-            state.results.push({ bibtex: result.bibtex, raw: result.raw, source: result.source, input });
+            state.results.push({ bibtex: result.bibtex, raw: result.raw, source: result.source, input, citationCount: result.citationCount || null });
             state.stats.success++;
             state.stats.apiSource[result.source]++;
 
@@ -650,8 +680,8 @@ async function processPapers() {
 
     // Always fetch similar papers when there are successful results.
     // Switch to results tab first so the user sees everything in one place.
-    elements.generateBtn.disabled = false;
-    elements.generateBtn.innerHTML = '<i class="fas fa-bolt"></i> Generate Citations';
+    elements.cancelBtn.classList.add('hidden');
+    elements.generateBtn.classList.remove('hidden');
     elements.progressContainer.classList.add('hidden');
     elements.bibtexOutput.classList.remove('hidden');
 
@@ -851,19 +881,36 @@ function updatePreview() {
             if (hasDuplicate) flagBadges += `<span class="ci-flag ci-flag-duplicate" title="Duplicate citation detected"><i class="fas fa-clone"></i> Duplicate</span>`;
             if (hasUnknown)   flagBadges += `<span class="ci-flag ci-flag-unknown"   title="One or more fields could not be resolved"><i class="fas fa-question-circle"></i> Unresolved</span>`;
 
+            // Citation count
+            const citeCount = result.citationCount;
+            const citeBadge = citeCount != null
+                ? `<span class="ci-cite-badge" title="${citeCount.toLocaleString()} citations on Semantic Scholar"><i class="fas fa-quote-right"></i> ${citeCount.toLocaleString()}</span>`
+                : '';
+
+            // Make authors clickable
+            const authorSpans = authors.split(' and ').map(a => {
+                const name = a.trim();
+                if (!name || name === 'Unknown Authors') return escapeAttr(name);
+                return `<span class="ci-author-link" onclick="lookupAuthor('${escapeAttr(name.replace(/'/g, "\\'"))}')" title="Look up author on Semantic Scholar">${escapeAttr(name)}</span>`;
+            }).join('<span class="ci-author-sep">, </span>');
+
             item.innerHTML = `
                 <div class="citation-status-bar">
                     <span class="ci-status-badge ci-ok"><i class="fas fa-check-circle"></i> OK</span>
                     <span class="ci-source-badge ci-source-${sourceClass}">${sourceLabel}</span>
                     ${year ? `<span class="ci-year-badge">${year}</span>` : ''}
+                    ${citeBadge}
                     ${flagBadges}
                     <button class="btn-small copy-preview ci-copy-btn" data-index="${index}">
                         <i class="fas fa-copy"></i> Copy
                     </button>
+                    <button class="btn-small ci-edit-btn" onclick="openEditor(${index})" title="Edit citation fields">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
-                <h4 class="ci-title">${title}</h4>
-                <div class="ci-authors">${authors}</div>
-                ${journal ? `<div class="ci-journal">${journal}</div>` : ''}
+                <h4 class="ci-title">${escapeAttr(title)}</h4>
+                <div class="ci-authors">${authorSpans}</div>
+                ${journal ? `<div class="ci-journal">${escapeAttr(journal)}</div>` : ''}
             `;
 
             // Unknown: add action prompt below the card body
@@ -982,15 +1029,61 @@ function loadHistory() {
 function renderHistoryList() {
     const historyList = elements.historyList;
 
-    if (state.history.length === 0) {
+    // Apply filters
+    const searchTerm = (elements.historySearch?.value || '').toLowerCase();
+    const sourceFilter = elements.historySourceFilter?.value || 'all';
+    const sortOrder = elements.historySortOrder?.value || 'newest';
+
+    // Get active folder
+    const activeChip = document.querySelector('.folder-chip.active');
+    const activeFolder = activeChip ? activeChip.dataset.folder : 'all';
+
+    let filtered = [...state.history];
+
+    // Folder filter
+    if (activeFolder && activeFolder !== 'all') {
+        const folders = getFolders();
+        const folder = folders.find(f => f.name === activeFolder);
+        if (folder) {
+            const folderItemIds = new Set(folder.items.map(i => i.id));
+            filtered = filtered.filter(item => folderItemIds.has(item.id));
+        }
+    }
+
+    // Text search
+    if (searchTerm) {
+        filtered = filtered.filter(item => {
+            const title = (item.bibtex.match(/title\s*=\s*\{([^}]+)\}/)?.[1] || '').toLowerCase();
+            const input = (item.input || '').toLowerCase();
+            const source = (item.source || '').toLowerCase();
+            return title.includes(searchTerm) || input.includes(searchTerm) || source.includes(searchTerm);
+        });
+    }
+
+    // Source filter
+    if (sourceFilter && sourceFilter !== 'all') {
+        filtered = filtered.filter(item => item.source === sourceFilter);
+    }
+
+    // Sort
+    if (sortOrder === 'oldest') filtered.reverse();
+    else if (sortOrder === 'az') {
+        filtered.sort((a, b) => {
+            const ta = (a.bibtex.match(/title\s*=\s*\{([^}]+)\}/)?.[1] || a.input || '').toLowerCase();
+            const tb = (b.bibtex.match(/title\s*=\s*\{([^}]+)\}/)?.[1] || b.input || '').toLowerCase();
+            return ta.localeCompare(tb);
+        });
+    }
+
+    if (filtered.length === 0) {
         historyList.innerHTML = `
             <div class="empty-history">
                 <i class="fas fa-history fa-3x"></i>
-                <h4>No History Yet</h4>
-                <p>Your fetched citations will appear here for quick access</p>
-                <button class="btn-primary" onclick="switchTab('input')">
+                <h4>${state.history.length === 0 ? 'No History Yet' : 'No Matching Citations'}</h4>
+                <p>${state.history.length === 0 ? 'Your fetched citations will appear here for quick access' : 'Try adjusting your search or filter'}</p>
+                ${state.history.length === 0 ? `<button class="btn-primary" onclick="switchTab('input')">
                     <i class="fas fa-plus"></i> Start Generating
-                </button>
+                </button>` : ''}
             </div>
         `;
         return;
@@ -998,7 +1091,7 @@ function renderHistoryList() {
 
     historyList.innerHTML = '';
 
-    state.history.forEach(item => {
+    filtered.forEach(item => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
 
@@ -1027,6 +1120,14 @@ function renderHistoryList() {
                 <button class="btn-small delete-history" data-id="${item.id}">
                     <i class="fas fa-trash"></i> Delete
                 </button>
+                <div class="folder-add-wrapper">
+                    <button class="btn-small add-to-folder" data-id="${item.id}" title="Add to folder">
+                        <i class="fas fa-folder-plus"></i>
+                    </button>
+                    <select class="folder-select hidden" data-id="${item.id}">
+                        <option value="">Add to folder...</option>
+                    </select>
+                </div>
             </div>
         `;
 
@@ -1195,6 +1296,8 @@ function copyToClipboard() {
 
     if (format === 'bibtex') {
         text = elements.bibtexOutput.textContent;
+    } else if (format === 'ris') {
+        text = convertToRIS(state.results);
     } else if (format === 'plain') {
         text = convertToPlainText(state.results);
     } else {
@@ -1215,6 +1318,9 @@ function downloadBib() {
     if (format === 'bibtex') {
         text = elements.bibtexOutput.textContent;
         filename = 'citations.bib';
+    } else if (format === 'ris') {
+        text = convertToRIS(state.results);
+        filename = 'citations.ris';
     } else if (format === 'plain') {
         text = convertToPlainText(state.results);
         filename = 'citations.txt';
@@ -1382,6 +1488,49 @@ function convertToCitationStyle(data, style) {
     }).join('\n\n');
 }
 
+function convertToRIS(results) {
+    const lines = [];
+    results.forEach((result) => {
+        const bibtex = result.bibtex || result;
+        if (bibtex.startsWith('%')) return;
+
+        const titleM  = bibtex.match(/title\s*=\s*\{+([^}]+)\}+/);
+        const authorM = bibtex.match(/author\s*=\s*\{([^}]+)\}/);
+        const journalM= bibtex.match(/journal\s*=\s*\{([^}]+)\}/);
+        const yearM   = bibtex.match(/year\s*=\s*\{([^}]+)\}/);
+        const doiM    = bibtex.match(/doi\s*=\s*\{([^}]+)\}/i);
+        const volumeM = bibtex.match(/volume\s*=\s*\{([^}]+)\}/);
+        const numberM = bibtex.match(/number\s*=\s*\{([^}]+)\}/);
+        const pagesM  = bibtex.match(/pages\s*=\s*\{([^}]+)\}/);
+
+        const title   = titleM   ? titleM[1].replace(/[{}]/g,'')  : '';
+        const authors = authorM  ? authorM[1].replace(/[{}]/g,'') : '';
+        const journal = journalM ? journalM[1].replace(/[{}]/g,'') : '';
+        const year    = yearM    ? yearM[1] : '';
+        const doi     = doiM     ? doiM[1] : '';
+        const volume  = volumeM  ? volumeM[1] : '';
+        const number  = numberM  ? numberM[1] : '';
+        const pages   = pagesM   ? pagesM[1] : '';
+
+        const type = journal ? 'JOUR' : 'GEN';
+        lines.push('TY  - ' + type);
+        lines.push('TI  - ' + title);
+        authors.split(' and ').forEach(a => {
+            const trimmed = a.trim();
+            if (trimmed) lines.push('AU  - ' + trimmed);
+        });
+        if (journal) lines.push('JO  - ' + journal);
+        if (year)    lines.push('PY  - ' + year);
+        if (volume)  lines.push('VL  - ' + volume);
+        if (number)  lines.push('IS  - ' + number);
+        if (pages)   lines.push('SP  - ' + pages);
+        if (doi)     lines.push('DO  - ' + doi);
+        lines.push('ER  - ');
+        lines.push('');
+    });
+    return lines.join('\n');
+}
+
 // ===========================
 // FILE HANDLING (ENHANCED)
 // ===========================
@@ -1460,7 +1609,6 @@ function handleFileUpload(event) {
             showToast(`Loaded ${lines.length} items from ${file.name}`, 'success');
 
         } catch (error) {
-            console.error('Error reading file:', error);
             showToast('Error reading file', 'error');
             resetFileInput();
         }
@@ -1565,7 +1713,7 @@ function loadSettings() {
             }
 
         } catch (e) {
-            console.error('Failed to load settings:', e);
+            // Failed to load settings
         }
     }
 }
@@ -1689,7 +1837,6 @@ function initServiceWorker() {
             if (!res.ok) return; // file missing – skip silently
             navigator.serviceWorker.register('service-worker.js')
                 .then(registration => {
-                    console.log('Service Worker registered:', registration.scope);
                     updateOnlineStatus();
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
@@ -1976,7 +2123,7 @@ function initQRPayment() {
         enlargeModal.classList.add('hidden');
     });
 
-    document.getElementById('closeEnlargeBtn')?.addEventListener('click', () => {
+    document.getElementById('closeEnlargeBottom')?.addEventListener('click', () => {
         enlargeModal.classList.add('hidden');
     });
 
@@ -2023,8 +2170,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Make available globally if needed
     window.qrPayment = qrPayment;
-
-    console.log('QR Payment system initialized');
 });
 
 // ===========================
@@ -2360,6 +2505,275 @@ function addSelectedSuggestions() {
 }
 
 // ===========================
+// DEDUPLICATION
+// ===========================
+
+function detectDuplicatesInInput(lines) {
+    const seen = { doi: new Map(), arxiv: new Map(), title: new Map() };
+    const dupIndices = new Set();
+
+    lines.forEach((line, i) => {
+        const trimmed = line.trim();
+        const doiMatch = trimmed.match(/^10\.\d{4,9}\/[-._;()/:A-Z0-9]+$/i);
+        const arxivMatch = trimmed.match(/^\d{4}\.\d{4,5}(v\d+)?$/);
+        const isDOI = doiMatch !== null;
+        const isArxiv = arxivMatch !== null;
+
+        if (isDOI) {
+            const key = trimmed.toLowerCase();
+            if (seen.doi.has(key)) dupIndices.add(i);
+            else seen.doi.set(key, i);
+        } else if (isArxiv) {
+            const key = trimmed.toLowerCase();
+            if (seen.arxiv.has(key)) dupIndices.add(i);
+            else seen.arxiv.set(key, i);
+        } else {
+            const key = trimmed.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 60);
+            if (seen.title.has(key)) dupIndices.add(i);
+            else seen.title.set(key, i);
+        }
+    });
+
+    return { dupIndices, duplicateCount: dupIndices.size };
+}
+
+function showDedupWarning(lines) {
+    const { dupIndices, duplicateCount } = detectDuplicatesInInput(lines);
+    if (duplicateCount === 0) {
+        elements.dedupPanel.classList.add('hidden');
+        return;
+    }
+    elements.dedupPanel.classList.remove('hidden');
+    elements.dedupSummary.textContent = `Found ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''} in your input. Removing them saves API calls and avoids duplicate citations.`;
+    elements.dedupRemoveBtn.onclick = () => {
+        const filtered = lines.filter((_, i) => !dupIndices.has(i));
+        elements.paperInput.value = filtered.join('\n');
+        elements.dedupPanel.classList.add('hidden');
+        updatePaperCount();
+        showToast(`Removed ${duplicateCount} duplicate${duplicateCount > 1 ? 's' : ''}`, 'success');
+    };
+    elements.dedupDismissBtn.onclick = () => elements.dedupPanel.classList.add('hidden');
+}
+
+// ===========================
+// SHAREABLE LINK
+// ===========================
+
+function encodeShareLink(text) {
+    try {
+        const bytes = new TextEncoder().encode(text);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const compressed = btoa(binary);
+        const url = new URL(window.location);
+        url.hash = 'share=' + compressed;
+        return url.toString();
+    } catch { return ''; }
+}
+
+function decodeShareLink() {
+    try {
+        const hash = window.location.hash;
+        if (!hash || !hash.startsWith('#share=')) return null;
+        const compressed = hash.replace('#share=', '');
+        const binary = atob(compressed);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return new TextDecoder().decode(bytes);
+    } catch { return null; }
+}
+
+function showSharePanel() {
+    if (state.results.length === 0) {
+        showToast('Generate citations first before sharing', 'warning');
+        return;
+    }
+    const inputText = state.paperInputs.join('\n');
+    const link = encodeShareLink(inputText);
+    if (!link) { showToast('Could not generate share link', 'error'); return; }
+    elements.shareLinkInput.value = link;
+    elements.sharePanel.classList.remove('hidden');
+}
+
+// ===========================
+// INLINE BIBTEX EDITOR
+// ===========================
+
+let _editingIndex = -1;
+
+function openEditor(index) {
+    _editingIndex = index;
+    const result = state.results[index];
+    if (!result || result.bibtex.startsWith('%')) return;
+
+    const bibtex = result.bibtex;
+    const typeM   = bibtex.match(/@(\w+)\{/);
+    const keyM    = bibtex.match(/@\w+\{([^,]+)/);
+    const titleM  = bibtex.match(/title\s*=\s*\{+([^}]+)\}+/);
+    const authorM = bibtex.match(/author\s*=\s*\{([^}]+)\}/);
+    const journalM= bibtex.match(/journal\s*=\s*\{([^}]+)\}/);
+    const yearM   = bibtex.match(/year\s*=\s*\{([^}]+)\}/);
+    const volumeM = bibtex.match(/volume\s*=\s*\{([^}]+)\}/);
+    const numberM = bibtex.match(/number\s*=\s*\{([^}]+)\}/);
+    const pagesM  = bibtex.match(/pages\s*=\s*\{([^}]+)\}/);
+    const doiM    = bibtex.match(/doi\s*=\s*\{([^}]+)\}/i);
+    const publisherM = bibtex.match(/publisher\s*=\s*\{([^}]+)\}/);
+
+    document.getElementById('editType').value = typeM ? typeM[1] : 'article';
+    document.getElementById('editKey').value = keyM ? keyM[1] : '';
+    document.getElementById('editAuthor').value = authorM ? authorM[1].replace(/[{}]/g,'') : '';
+    document.getElementById('editTitle').value = titleM ? titleM[1].replace(/[{}]/g,'') : '';
+    document.getElementById('editJournal').value = journalM ? journalM[1].replace(/[{}]/g,'') : '';
+    document.getElementById('editYear').value = yearM ? yearM[1] : '';
+    document.getElementById('editVolume').value = volumeM ? volumeM[1] : '';
+    document.getElementById('editNumber').value = numberM ? numberM[1] : '';
+    document.getElementById('editPages').value = pagesM ? pagesM[1] : '';
+    document.getElementById('editDOI').value = doiM ? doiM[1] : '';
+    document.getElementById('editPublisher').value = publisherM ? publisherM[1] : '';
+
+    updateEditorPreview();
+    elements.editorModal.classList.remove('hidden');
+}
+
+function updateEditorPreview() {
+    const fields = {};
+    const type = document.getElementById('editType').value;
+    const key = document.getElementById('editKey').value || 'key';
+    const author = document.getElementById('editAuthor').value;
+    const title = document.getElementById('editTitle').value;
+    const journal = document.getElementById('editJournal').value;
+    const year = document.getElementById('editYear').value;
+    const volume = document.getElementById('editVolume').value;
+    const number = document.getElementById('editNumber').value;
+    const pages = document.getElementById('editPages').value;
+    const doi = document.getElementById('editDOI').value;
+    const publisher = document.getElementById('editPublisher').value;
+
+    const indent = state.settings.formatIndent ? '  ' : '';
+    const lines = [];
+    if (author)    lines.push(`${indent}author = {${author}}`);
+    if (title)     lines.push(`${indent}title = {{${title}}}`);
+    if (journal)   lines.push(`${indent}journal = {${journal}}`);
+    if (year)      lines.push(`${indent}year = {${year}}`);
+    if (volume)    lines.push(`${indent}volume = {${volume}}`);
+    if (number)    lines.push(`${indent}number = {${number}}`);
+    if (pages)     lines.push(`${indent}pages = {${pages}}`);
+    if (doi)       lines.push(`${indent}doi = {${doi}}`);
+    if (publisher) lines.push(`${indent}publisher = {${publisher}}`);
+
+    document.getElementById('editBibtexPreview').textContent = `@${type}{${key},\n${lines.join(',\n')}\n}`;
+}
+
+function saveEditor() {
+    if (_editingIndex < 0) return;
+    const bibtex = document.getElementById('editBibtexPreview').textContent;
+    state.results[_editingIndex].bibtex = bibtex;
+    elements.editorModal.classList.add('hidden');
+    displayResults();
+    updatePreview();
+    showToast('Citation updated', 'success');
+}
+
+// ===========================
+// CITATION FOLDERS
+// ===========================
+
+function getFolders() {
+    try { return JSON.parse(localStorage.getItem('citationFolders') || '[]'); }
+    catch { return []; }
+}
+
+function saveFolders(folders) {
+    localStorage.setItem('citationFolders', JSON.stringify(folders));
+}
+
+function createFolder(name) {
+    const folders = getFolders();
+    if (folders.find(f => f.name.toLowerCase() === name.toLowerCase())) {
+        showToast('A folder with this name already exists', 'warning');
+        return;
+    }
+    folders.push({ name, items: [], createdAt: Date.now() });
+    saveFolders(folders);
+    renderFolderChips();
+    showToast(`Folder "${name}" created`, 'success');
+}
+
+function addToFolder(folderName, historyItem) {
+    const folders = getFolders();
+    const folder = folders.find(f => f.name === folderName);
+    if (!folder) return;
+    if (folder.items.find(i => i.id === historyItem.id)) {
+        showToast('Already in this folder', 'info');
+        return;
+    }
+    folder.items.push(historyItem);
+    saveFolders(folders);
+    showToast(`Added to "${folderName}"`, 'success');
+}
+
+function removeFromFolder(folderName, itemId) {
+    let folders = getFolders();
+    const folder = folders.find(f => f.name === folderName);
+    if (!folder) return;
+    folder.items = folder.items.filter(i => i.id !== itemId);
+    saveFolders(folders);
+    loadHistory();
+    showToast('Removed from folder', 'info');
+}
+
+function deleteFolder(name) {
+    let folders = getFolders();
+    folders = folders.filter(f => f.name !== name);
+    saveFolders(folders);
+    renderFolderChips();
+    loadHistory();
+    showToast(`Folder "${name}" deleted`, 'info');
+}
+
+function renderFolderChips() {
+    const folders = getFolders();
+    elements.folderChips.innerHTML = '<button class="folder-chip active" data-folder="all">All</button>';
+    folders.forEach(f => {
+        const chip = document.createElement('button');
+        chip.className = 'folder-chip';
+        chip.dataset.folder = f.name;
+        chip.textContent = f.name + ' (' + f.items.length + ')';
+        chip.title = 'Right-click to delete folder';
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.folder-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            renderHistoryList();
+        });
+        chip.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (confirm(`Delete folder "${f.name}"? Items will return to main history.`)) {
+                deleteFolder(f.name);
+            }
+        });
+        elements.folderChips.appendChild(chip);
+    });
+}
+
+// ===========================
+// AUTHOR LOOKUP
+// ===========================
+
+function lookupAuthor(authorName) {
+    const url = `https://api.semanticscholar.org/graph/v1/author/search?query=${encodeURIComponent(authorName)}`;
+    fetch(url).then(r => r.json()).then(data => {
+        if (data.data && data.data.length > 0) {
+            const author = data.data[0];
+            window.open(`https://www.semanticscholar.org/author/${author.authorId}`, '_blank', 'noopener');
+        } else {
+            window.open(`https://www.semanticscholar.org/search?q=${encodeURIComponent(authorName)}&sort=relevance`, '_blank', 'noopener');
+        }
+    }).catch(() => {
+        window.open(`https://www.semanticscholar.org/search?q=${encodeURIComponent(authorName)}&sort=relevance`, '_blank', 'noopener');
+    });
+}
+
+// ===========================
 // EVENT LISTENERS SETUP
 // ===========================
 
@@ -2601,6 +3015,86 @@ function setupEventListeners() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
+
+    // Cancel button
+    elements.cancelBtn.addEventListener('click', () => {
+        state.isProcessing = false;
+        elements.cancelBtn.classList.add('hidden');
+        elements.generateBtn.classList.remove('hidden');
+        elements.progressContainer.classList.add('hidden');
+        showToast('Processing cancelled', 'warning');
+    });
+
+    // Share panel
+    elements.shareBtn.addEventListener('click', showSharePanel);
+    elements.closeSharePanel.addEventListener('click', () => elements.sharePanel.classList.add('hidden'));
+    elements.copyShareLink.addEventListener('click', () => {
+        elements.shareLinkInput.select();
+        navigator.clipboard.writeText(elements.shareLinkInput.value).then(() => showToast('Share link copied!', 'success'));
+    });
+
+    // Inline editor
+    elements.closeEditor.addEventListener('click', () => elements.editorModal.classList.add('hidden'));
+    elements.closeEditorBottom.addEventListener('click', () => elements.editorModal.classList.add('hidden'));
+    elements.saveEditor.addEventListener('click', saveEditor);
+    ['editType','editKey','editAuthor','editTitle','editJournal','editYear','editVolume','editNumber','editPages','editDOI','editPublisher'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateEditorPreview);
+    });
+    elements.editorModal.addEventListener('click', (e) => {
+        if (e.target === elements.editorModal) elements.editorModal.classList.add('hidden');
+    });
+
+    // Folder management
+    elements.newFolderBtn.addEventListener('click', () => elements.folderModal.classList.remove('hidden'));
+    elements.closeFolder.addEventListener('click', () => elements.folderModal.classList.add('hidden'));
+    elements.closeFolderBottom.addEventListener('click', () => elements.folderModal.classList.add('hidden'));
+    elements.createFolderBtn.addEventListener('click', () => {
+        const name = elements.folderNameInput.value.trim();
+        if (!name) { showToast('Enter a folder name', 'warning'); return; }
+        createFolder(name);
+        elements.folderNameInput.value = '';
+        elements.folderModal.classList.add('hidden');
+    });
+    elements.folderModal.addEventListener('click', (e) => {
+        if (e.target === elements.folderModal) elements.folderModal.classList.add('hidden');
+    });
+
+    // Folder add buttons in history list
+    elements.historyList.addEventListener('click', (e) => {
+        const addBtn = e.target.closest('.add-to-folder');
+        if (!addBtn) return;
+        const select = addBtn.nextElementSibling;
+        if (!select || !select.classList.contains('folder-select')) return;
+        // Populate folder options
+        const folders = getFolders();
+        select.innerHTML = '<option value="">Add to folder...</option>' +
+            folders.map(f => `<option value="${escapeAttr(f.name)}">${escapeAttr(f.name)}</option>`).join('');
+        select.classList.toggle('hidden');
+        select.focus();
+    });
+    elements.historyList.addEventListener('change', (e) => {
+        if (!e.target.classList.contains('folder-select')) return;
+        const folderName = e.target.value;
+        const itemId = parseInt(e.target.dataset.id);
+        if (!folderName || !itemId) return;
+        const item = state.history.find(h => h.id === itemId);
+        if (item) addToFolder(folderName, item);
+        e.target.classList.add('hidden');
+        e.target.value = '';
+        renderFolderChips();
+    });
+
+    // History search/filter/sort
+    if (elements.historySearch) {
+        elements.historySearch.addEventListener('input', debounce(() => renderHistoryList(), 250));
+    }
+    if (elements.historySourceFilter) {
+        elements.historySourceFilter.addEventListener('change', () => renderHistoryList());
+    }
+    if (elements.historySortOrder) {
+        elements.historySortOrder.addEventListener('change', () => renderHistoryList());
+    }
 }
 
 // ===========================
@@ -2608,17 +3102,13 @@ function setupEventListeners() {
 // ===========================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Citation Fetcher v2.0 initialized');
-
-    // Rotate testimonial to a random entry
-    rotateTestimonial();
-
     // Set app version
-    elements.appVersion.textContent = 'v2.0';
+    elements.appVersion.textContent = 'v2.1';
 
     // Load saved state
     loadSettings();
     loadHistory();
+    renderFolderChips();
 
     // Initialize features
     initKeyboardShortcuts();
@@ -2627,6 +3117,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set up event listeners
     setupEventListeners();
+
+    // Check for shared link in URL hash
+    const sharedInput = decodeShareLink();
+    if (sharedInput) {
+        elements.paperInput.value = sharedInput;
+        updatePaperCount();
+        showToast('Shared citation list loaded! Generate to fetch the citations.', 'info', 6000);
+    }
+
+    // Rotate testimonial to a random entry
+    rotateTestimonial();
 
     // Initial UI update
     updatePaperCount();
@@ -2645,3 +3146,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.switchTab = switchTab;
 window.loadExample = loadExample;
 window.toggleDarkMode = toggleDarkMode;
+window.openEditor = openEditor;
+window.lookupAuthor = lookupAuthor;
+window.showSharePanel = showSharePanel;
