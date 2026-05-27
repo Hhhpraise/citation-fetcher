@@ -1076,11 +1076,16 @@ function renderHistoryList() {
     }
 
     if (filtered.length === 0) {
+        const hasFilters = searchTerm || sourceFilter !== 'all' || (activeFolder && activeFolder !== 'all');
         historyList.innerHTML = `
             <div class="empty-history">
-                <i class="fas fa-history fa-3x"></i>
+                <i class="fas fa-${state.history.length === 0 ? 'history' : 'search'} fa-3x"></i>
                 <h4>${state.history.length === 0 ? 'No History Yet' : 'No Matching Citations'}</h4>
-                <p>${state.history.length === 0 ? 'Your fetched citations will appear here for quick access' : 'Try adjusting your search or filter'}</p>
+                <p>${state.history.length === 0
+                    ? 'Your fetched citations will appear here for quick access'
+                    : hasFilters
+                        ? 'No citations match your search or filter. Try different terms.'
+                        : 'No citations in this folder yet.'}</p>
                 ${state.history.length === 0 ? `<button class="btn-primary" onclick="switchTab('input')">
                     <i class="fas fa-plus"></i> Start Generating
                 </button>` : ''}
@@ -1089,7 +1094,13 @@ function renderHistoryList() {
         return;
     }
 
-    historyList.innerHTML = '';
+    // Show result count when filtering
+    let resultInfo = '';
+    if (searchTerm || sourceFilter !== 'all' || (activeFolder && activeFolder !== 'all')) {
+        resultInfo = `<div class="history-result-info">Showing ${filtered.length} of ${state.history.length} citation${state.history.length !== 1 ? 's' : ''}</div>`;
+    }
+
+    historyList.innerHTML = resultInfo;
 
     filtered.forEach(item => {
         const historyItem = document.createElement('div');
@@ -1672,9 +1683,9 @@ function updateSettings() {
 
     // Apply dark mode if changed
     if (state.settings.enableDarkMode) {
-        document.body.setAttribute('data-theme', 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-        document.body.setAttribute('data-theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
     }
 
     // Save to localStorage
@@ -1709,7 +1720,7 @@ function loadSettings() {
 
             // Apply dark mode
             if (state.settings.enableDarkMode) {
-                document.body.setAttribute('data-theme', 'dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
             }
 
         } catch (e) {
@@ -1747,13 +1758,13 @@ function resetSettings() {
 // ===========================
 
 function toggleDarkMode() {
-    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
     if (isDark) {
-        document.body.setAttribute('data-theme', 'light');
+        document.documentElement.setAttribute('data-theme', 'light');
         state.settings.enableDarkMode = false;
     } else {
-        document.body.setAttribute('data-theme', 'dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
         state.settings.enableDarkMode = true;
     }
 

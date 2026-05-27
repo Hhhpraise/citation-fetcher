@@ -21,12 +21,14 @@
     <meta name="twitter:creator" content="@ArowoloPraise">
     <title>Citation Fetcher - Free BibTeX Citation Generator | DOI, arXiv & Title to BibTeX</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
     <meta name="theme-color" content="#00c8ff">
     <!-- Prevent dark mode FOUC: set theme before paint -->
     <script>
-      (function(){try{var t=JSON.parse(localStorage.getItem('citationFetcherSettings')||'{}');if(t.enableDarkMode)document.body.setAttribute('data-theme','dark');}catch(e){}})();
+      (function(){try{var t=JSON.parse(localStorage.getItem('citationFetcherSettings')||'{}');if(t.enableDarkMode)document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
     </script>
     <!-- Structured data for search engines -->
     <script type="application/ld+json">
@@ -712,7 +714,7 @@ Examples:
             <h2 class="section-title">Browser Bookmarklet</h2>
             <p class="section-subtitle">Drag this button to your bookmarks bar. Click it on any journal page, arXiv abstract, or paper URL to instantly open Citation Fetcher with the paper pre-filled.</p>
             <div class="bookmarklet-card">
-                <a class="bookmarklet-btn" href="javascript:(function(){var t=document.title;var d=document.querySelector('meta[name=citation_doi]')||document.querySelector('meta[name=dc.identifier]');var doi=d?d.content:'';var u=doi||t||window.location.href;window.open('https://hhhpraise.github.io/citation-fetcher/#'+encodeURIComponent(u))})();" onclick="event.preventDefault();showToast('Drag this button to your bookmarks bar!','info',6000);">
+                <a class="bookmarklet-btn" href="javascript:(function(){function g(s){var e=document.querySelector(s);return e?e.content||e.getAttribute('value')||'':'';}var doi=g('meta[name=&quot;citation_doi&quot;]')||g('meta[name=&quot;dc.identifier&quot;]')||g('meta[name=&quot;DC.identifier&quot;]')||g('meta[name=&quot;prism.doi&quot;]')||'';if(!doi){var u=window.location.href;var m=u.match(/10\.\d{4,9}\/[-._;()\/:A-Z0-9]+/i);if(m)doi=m[0];}var title=g('meta[name=&quot;citation_title&quot;]')||g('meta[property=&quot;og:title&quot;]')||document.title||'';var arxiv='';var a=window.location.href.match(/arxiv\.org\/abs\/(\d+\.\d+)/i);if(a)arxiv=a[1];var q=doi||arxiv||title||window.location.href;window.open('https://hhhpraise.github.io/citation-fetcher/#'+encodeURIComponent(q));})();" onclick="event.preventDefault();showToast('Drag this button to your bookmarks bar!','info',6000);">
                     <i class="fas fa-graduation-cap"></i> Cite This!
                 </a>
                 <div class="bookmarklet-instructions">

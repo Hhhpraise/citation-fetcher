@@ -4080,48 +4080,60 @@ a:focus-visible {
     border-top: 1px solid var(--border);
 }
 
-/* History Toolbar */
+/* History Toolbar - improved */
 .history-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 16px;
+    padding: 14px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     align-items: center;
 }
 .history-search {
     flex: 1;
-    min-width: 200px;
+    min-width: 180px;
     position: relative;
 }
 .history-search i {
     position: absolute;
-    left: 12px;
+    left: 11px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--gray);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    pointer-events: none;
+    z-index: 1;
 }
 .history-search input {
     width: 100%;
-    padding: 8px 12px 8px 34px;
+    padding: 8px 12px 8px 32px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-family: var(--font-display);
     font-size: 0.84rem;
     background: var(--surface);
     color: var(--dark);
+    transition: var(--transition);
 }
 .history-search input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(0,200,255,0.1);
 }
+.history-search input::placeholder {
+    color: var(--gray);
+    opacity: 0.7;
+}
 .history-filters {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
 }
 .history-filters select {
-    padding: 8px 12px;
+    padding: 8px 28px 8px 10px;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     font-family: var(--font-display);
@@ -4129,6 +4141,12 @@ a:focus-visible {
     background: var(--surface);
     color: var(--dark);
     cursor: pointer;
+    appearance: auto;
+    transition: var(--transition);
+}
+.history-filters select:focus {
+    outline: none;
+    border-color: var(--primary);
 }
 .history-folders-bar {
     width: 100%;
@@ -4136,7 +4154,9 @@ a:focus-visible {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
-    padding-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    margin-top: 2px;
 }
 .folder-label {
     font-size: 0.78rem;
@@ -4170,6 +4190,14 @@ a:focus-visible {
 .folder-chip:hover:not(.active) {
     border-color: var(--primary);
     color: var(--primary);
+}
+
+/* History result count info */
+.history-result-info {
+    font-size: 0.78rem;
+    color: var(--gray);
+    padding: 4px 0 10px;
+    text-align: center;
 }
 
 /* Folder Add in History */
@@ -4279,9 +4307,15 @@ a:focus-visible {
     .history-toolbar {
         flex-direction: column;
         align-items: stretch;
+        gap: 8px;
     }
     .history-filters {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    .history-filters select {
+        flex: 1;
+        min-width: 120px;
     }
     .dedup-panel {
         flex-direction: column;
