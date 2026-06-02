@@ -103,8 +103,6 @@ const elements = {
     clearHistory: document.getElementById('clearHistory'),
     exportHistory: document.getElementById('exportHistory'),
     historySearch: document.getElementById('historySearch'),
-    historySearchBtn: document.getElementById('historySearchBtn'),
-    historyClearSearch: document.getElementById('historyClearSearch'),
     historySourceFilter: document.getElementById('historySourceFilter'),
     historySortOrder: document.getElementById('historySortOrder'),
     folderChips: document.getElementById('folderChips'),
@@ -129,8 +127,12 @@ const elements = {
     menuToggle: document.getElementById('menuToggle'),
     toastContainer: document.getElementById('toastContainer'),
     liveRegion: document.getElementById('liveRegion'),
-    footerHistoryLink: document.getElementById('footerHistoryLink'),
-    historyNavLink: document.getElementById('historyNavLink'),
+    navHistoryBtn: document.getElementById('navHistoryBtn'),
+    navSettingsBtn: document.getElementById('navSettingsBtn'),
+    historyPanel: document.getElementById('historyPanel'),
+    settingsPanel: document.getElementById('settingsPanel'),
+    closeHistory: document.getElementById('closeHistory'),
+    closeSettings: document.getElementById('closeSettings'),
     donateBtn: document.getElementById('donateBtn'),
     newsletterForm: document.getElementById('newsletterForm'),
     offlineStatus: document.getElementById('offlineStatus'),
@@ -1228,27 +1230,87 @@ function exportHistory() {
 // ===========================
 
 function switchTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.tab === tabName) {
-            btn.classList.add('active');
-        }
-    });
-
-    // Update tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById(`${tabName}-tab`).classList.add('active');
-
-    // Special handling for history tab
+    // Input/results are always visible; just focus or scroll
+    if (tabName === 'input') {
+        elements.paperInput.focus();
+        return;
+    }
+    if (tabName === 'results') {
+        document.getElementById('bibtexView')?.scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+    // History and Settings toggle slide panels
     if (tabName === 'history') {
-        loadHistory();
+        toggleSlidePanel('history');
+        return;
+    }
+    if (tabName === 'settings') {
+        toggleSlidePanel('settings');
+        return;
+    }
+}
+
+function bindHistorySearch() {
+    const searchInput = document.getElementById('historySearch');
+    const sourceSel   = document.getElementById('historySourceFilter');
+    const sortSel     = document.getElementById('historySortOrder');
+
+    if (searchInput) {
+        const newInput = searchInput.cloneNode(true);
+        searchInput.parentNode.replaceChild(newInput, searchInput);
+        newInput.addEventListener('input', debounce(renderHistoryList, 250));
+        newInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); renderHistoryList(); } });
+    }
+    if (sourceSel) {
+        const newSel = sourceSel.cloneNode(true);
+        sourceSel.parentNode.replaceChild(newSel, sourceSel);
+        newSel.addEventListener('change', () => renderHistoryList());
+    }
+    if (sortSel) {
+        const newSel = sortSel.cloneNode(true);
+        sortSel.parentNode.replaceChild(newSel, sortSel);
+        newSel.addEventListener('change', () => renderHistoryList());
+    }
+}
+
+function toggleSlidePanel(panelName) {
+    const panel = panelName === 'history' ? elements.historyPanel : elements.settingsPanel;
+    const otherPanel = panelName === 'history' ? elements.settingsPanel : elements.historyPanel;
+
+    if (otherPanel && otherPanel.classList.contains('open')) {
+        otherPanel.classList.remove('open');
+        removeSlideOverlay();
     }
 
-    // Announce tab change for screen readers
-    announceToScreenReader(`Switched to ${tabName} tab`);
+    const isOpening = !panel.classList.contains('open');
+    if (isOpening) {
+        panel.classList.add('open');
+        addSlideOverlay(panel);
+        if (panelName === 'history') {
+            loadHistory();
+            bindHistorySearch();
+        }
+    } else {
+        panel.classList.remove('open');
+        removeSlideOverlay();
+    }
+}
+
+function addSlideOverlay(panel) {
+    removeSlideOverlay();
+    const overlay = document.createElement('div');
+    overlay.className = 'slide-overlay';
+    overlay.id = 'slideOverlay';
+    overlay.addEventListener('click', () => {
+        panel.classList.remove('open');
+        removeSlideOverlay();
+    });
+    document.body.appendChild(overlay);
+}
+
+function removeSlideOverlay() {
+    const overlay = document.getElementById('slideOverlay');
+    if (overlay) overlay.remove();
 }
 
 function switchView(viewName) {
@@ -2421,33 +2483,43 @@ function renderSimilarPapers(papers) {
         const venue = paper.venue || '';
         const citations = paper.citationCount != null ? paper.citationCount.toLocaleString() : null;
         const abstract = paper.abstract || '';
+        const abstractPreview = abstract && abstract.length > 60
+            ? abstract.substring(0, 140) + '…'
+            : abstract;
 
         const card = document.createElement('div');
         card.className = 'suggestion-card';
-        card.innerHTML = `
-            <label class="suggestion-label">
-                <div class="suggestion-checkbox-wrap">
-                    <input type="checkbox" class="suggestion-checkbox" data-index="${i}"
-                        data-title="${escapeAttr(paper.title)}"
-                        data-doi="${escapeAttr(doi)}"
-                        data-arxiv="${escapeAttr(arxivId)}">
-                    <span class="checkbox-custom"></span>
-                </div>
-                <div class="suggestion-info">
-                    <div class="suggestion-title">${paper.title || 'Unknown Title'}</div>
-                    <div class="suggestion-meta">
-                        ${shown ? `<span class="suggestion-authors"><i class="fas fa-user-friends"></i> ${shown}${overflow}</span>` : ''}
-                        ${paper.year ? `<span class="suggestion-year">${paper.year}</span>` : ''}
-                        ${venue ? `<span class="suggestion-venue">${venue}</span>` : ''}
-                        ${citations !== null ? `<span class="suggestion-citations"><i class="fas fa-quote-right"></i> ${citations} citations</span>` : ''}
-                    </div>
-                    ${doi ? `<a href="https://doi.org/${doi}" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> ${doi}</a>` : ''}
-                </div>
-                <span class="abstract-hint" title="Hover to read abstract"><i class="fas fa-file-alt"></i></span>
-            </label>
-        `;
+        card.innerHTML = '<label class="suggestion-label">' +
+            '<div class="suggestion-checkbox-wrap">' +
+                '<input type="checkbox" class="suggestion-checkbox" data-index="' + i + '" ' +
+                    'data-title="' + escapeAttr(paper.title) + '" ' +
+                    'data-doi="' + escapeAttr(doi) + '" ' +
+                    'data-arxiv="' + escapeAttr(arxivId) + '">' +
+            '</div>' +
+            '<div class="suggestion-info">' +
+                '<div class="suggestion-title">' + (paper.title || 'Unknown Title') + '</div>' +
+                '<div class="suggestion-meta">' +
+                    (shown ? '<span class="suggestion-authors"><i class="fas fa-user-friends"></i> ' + shown + overflow + '</span>' : '') +
+                    (paper.year ? '<span class="suggestion-year">' + paper.year + '</span>' : '') +
+                    (venue ? '<span class="suggestion-venue">' + venue + '</span>' : '') +
+                    (citations !== null ? '<span class="suggestion-citations"><i class="fas fa-quote-right"></i> ' + citations + '</span>' : '') +
+                '</div>' +
+                (abstractPreview ? '<div class="suggestion-abstract">' + abstractPreview + '</div>' : '') +
+                (doi ? '<a href="https://doi.org/' + doi + '" target="_blank" rel="noopener" class="suggestion-doi" onclick="event.stopPropagation()"><i class="fas fa-external-link-alt"></i> ' + doi + '</a>' : '') +
+            '</div>' +
+        '</label>';
 
-        // Hover → show abstract tooltip
+        // Click card to toggle checkbox
+        card.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') return;
+            const cb = card.querySelector('.suggestion-checkbox');
+            if (cb) {
+                cb.checked = !cb.checked;
+                cb.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // Hover to show full abstract tooltip
         card.addEventListener('mouseenter', () => {
             window._showAbstractTooltip(card, abstract, paper.title || 'Unknown Title');
         });
@@ -2875,14 +2947,10 @@ function setupEventListeners() {
     // History actions
     elements.clearHistory.addEventListener('click', clearAllHistory);
     elements.exportHistory.addEventListener('click', exportHistory);
-    elements.footerHistoryLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab('history');
-    });
-    elements.historyNavLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab('history');
-    });
+    elements.navHistoryBtn.addEventListener('click', () => toggleSlidePanel('history'));
+    elements.navSettingsBtn.addEventListener('click', () => toggleSlidePanel('settings'));
+    elements.closeHistory.addEventListener('click', () => { elements.historyPanel.classList.remove('open'); removeSlideOverlay(); });
+    elements.closeSettings.addEventListener('click', () => { elements.settingsPanel.classList.remove('open'); removeSlideOverlay(); });
 
     // Settings
     elements.delaySlider.addEventListener('input', (e) => {
@@ -3028,11 +3096,6 @@ function setupEventListeners() {
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
 
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
     // Cancel button
     elements.cancelBtn.addEventListener('click', () => {
         state.isProcessing = false;
@@ -3102,25 +3165,7 @@ function setupEventListeners() {
         renderFolderChips();
     });
 
-    // History search/filter/sort — use direct DOM queries for reliability
-    (function bindHistoryControls() {
-        const searchInput = document.getElementById('historySearch');
-        const searchBtn   = document.getElementById('historySearchBtn');
-        const clearBtn    = document.getElementById('historyClearSearch');
-        const sourceSel   = document.getElementById('historySourceFilter');
-        const sortSel     = document.getElementById('historySortOrder');
 
-        function doSearch() { renderHistoryList(); }
-
-        if (searchBtn)   searchBtn.addEventListener('click', doSearch);
-        if (searchInput) searchInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } });
-        if (searchInput) searchInput.addEventListener('input', debounce(doSearch, 300));
-        if (clearBtn)    clearBtn.addEventListener('click', function() {
-            if (searchInput) { searchInput.value = ''; doSearch(); }
-        });
-        if (sourceSel)   sourceSel.addEventListener('change', doSearch);
-        if (sortSel)     sortSel.addEventListener('change', doSearch);
-    })();
 }
 
 // ===========================
@@ -3150,6 +3195,19 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.paperInput.value = sharedInput;
         updatePaperCount();
         showToast('Shared citation list loaded! Generate to fetch the citations.', 'info', 6000);
+    }
+
+    // Check for bookmarklet pre-fill (plain hash, not a share link)
+    const hash = window.location.hash;
+    if (hash && !hash.startsWith('#share=')) {
+        const bookmarkletInput = decodeURIComponent(hash.substring(1));
+        if (bookmarkletInput) {
+            elements.paperInput.value = bookmarkletInput;
+            updatePaperCount();
+            detectInputType(elements.paperInput.value);
+            showToast('Paper pre-filled from bookmarklet! Click Generate to fetch the citation.', 'info', 5000);
+            elements.paperInput.focus();
+        }
     }
 
     // Rotate testimonial to a random entry

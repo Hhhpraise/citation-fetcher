@@ -23,14 +23,12 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2300c8ff'/%3E%3Cstop offset='100%25' style='stop-color:%2300e5c0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23030c18'%3E🎓%3C/text%3E%3C/svg%3E">
-    <meta name="theme-color" content="#00c8ff">
-    <!-- Prevent dark mode FOUC: set theme before paint -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23475569'/%3E%3Cstop offset='100%25' style='stop-color:%2364748b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23fafafa'%3E&#127891;%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23475569'/%3E%3Cstop offset='100%25' style='stop-color:%2364748b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='url(%23g)'/%3E%3Ctext x='50' y='72' font-size='60' text-anchor='middle' fill='%23fafafa'%3E&#127891;%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#475569">
     <script>
       (function(){try{var t=JSON.parse(localStorage.getItem('citationFetcherSettings')||'{}');if(t.enableDarkMode)document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();
     </script>
-    <!-- Structured data for search engines -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -44,11 +42,11 @@
       "author": { "@type": "Person", "name": "Praise O. Arowolo", "url": "https://hhhpraise.github.io/portfolio/" }
     }
     </script>
-    <!-- Manifest for PWA -->
     <link rel="manifest" href="manifest.json">
 </head>
 <body data-theme="light">
-    <!-- Skip to content link for accessibility -->
+
+    <!-- Skip link -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Header -->
@@ -59,612 +57,417 @@
                     <i class="fas fa-graduation-cap"></i>
                     <h1>Citation<span>Fetcher</span></h1>
                 </div>
-                <div class="nav-links">
-                    <a href="#home" class="nav-link active">Home</a>
-                    <a href="#features" class="nav-link">Features</a>
-                    <a href="#how-to" class="nav-link">How To</a>
-                    <a href="#bookmarklet" class="nav-link">Bookmarklet</a>
-                    <a href="#api" class="nav-link">API Info</a>
-                    <a href="#history" class="nav-link" id="historyNavLink">
-                        <i class="fas fa-history"></i> History
+                <div class="nav-right">
+                    <button class="nav-btn" id="navHistoryBtn" title="Citation history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </button>
+                    <button class="nav-btn" id="navSettingsBtn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="nav-btn" id="darkModeToggle" aria-label="Toggle dark mode" title="Dark mode">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank" class="nav-btn" title="GitHub repository">
+                        <i class="fab fa-github"></i>
                     </a>
-                    <div class="header-actions">
-                        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
-                            <i class="fas fa-moon"></i>
-                            <span class="toggle-text">Dark Mode</span>
-                        </button>
-                        <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank" class="github-btn">
-                            <i class="fab fa-github"></i> <span class="github-text">GitHub</span>
-                        </a>
-                    </div>
+                    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
                 </div>
-                <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-                    <i class="fas fa-bars"></i>
-                </button>
             </nav>
         </div>
     </header>
 
     <!-- Keyboard Shortcuts Help -->
-    <div class="keyboard-help hidden" id="keyboardHelp">
-        <div class="keyboard-help-content">
-            <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
-            <div class="shortcuts-grid">
-                <div class="shortcut-item">
-                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
-                    <span>Generate Citations</span>
-                </div>
-                <div class="shortcut-item">
-                    <kbd>Ctrl</kbd> + <kbd>S</kbd>
-                    <span>Settings</span>
-                </div>
-                <div class="shortcut-item">
-                    <kbd>Ctrl</kbd> + <kbd>H</kbd>
-                    <span>Toggle History</span>
-                </div>
-                <div class="shortcut-item">
-                    <kbd>Escape</kbd>
-                    <span>Clear All</span>
-                </div>
-                <div class="shortcut-item">
-                    <kbd>Ctrl</kbd> + <kbd>D</kbd>
-                    <span>Toggle Dark Mode</span>
-                </div>
-                <div class="shortcut-item">
-                    <kbd>?</kbd>
-                    <span>Show/Hide Help</span>
-                </div>
+    <div class="overlay-panel hidden" id="keyboardHelp">
+        <div class="overlay-content">
+            <div class="overlay-header">
+                <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+                <button class="btn-icon" id="closeKeyboardHelp" aria-label="Close">&times;</button>
             </div>
-            <button class="btn-small" id="closeKeyboardHelp">Close</button>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>Enter</kbd><span>Generate Citations</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>S</kbd><span>Settings</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>H</kbd><span>Toggle History</span></div>
+                <div class="shortcut-item"><kbd>Escape</kbd><span>Clear All</span></div>
+                <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>D</kbd><span>Toggle Dark Mode</span></div>
+                <div class="shortcut-item"><kbd>?</kbd><span>Show/Hide Help</span></div>
+            </div>
+            <button class="btn-small" id="closeKeyboardHelpBottom">Close</button>
         </div>
     </div>
 
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h2>Generate BibTeX Citations <span class="highlight">Instantly</span></h2>
-                    <p class="subtitle">Automatically fetch properly formatted BibTeX citations for your academic papers from Crossref and ArXiv APIs</p>
-                    <div class="paper-counter">
-                        <i class="fas fa-file-alt"></i>
-                        <span id="paperCount">0 papers ready</span>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat">
-                            <i class="fas fa-bolt"></i>
-                            <div>
-                                <h3>Fast</h3>
-                                <p>Process multiple papers in seconds</p>
-                            </div>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-database"></i>
-                            <div>
-                                <h3>Accurate</h3>
-                                <p>Direct from official academic APIs</p>
-                            </div>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-lock"></i>
-                            <div>
-                                <h3>Free & Secure</h3>
-                                <p>No registration, no data collection</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="hero-actions">
-                        <button class="btn-primary" onclick="switchTab('input')">
-                            <i class="fas fa-play"></i> Start Generating
-                        </button>
-                        <button class="btn-secondary" onclick="loadExample()">
-                            <i class="fas fa-eye"></i> Try Example
-                        </button>
-                    </div>
-                    <div class="built-by">
-                        <p>Built by <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="developer-link">
-                            <i class="fas fa-user-circle"></i> Hhhpraise
-                        </a> for researchers worldwide</p>
-                    </div>
+    <!-- Main split-pane tool -->
+    <main class="split-pane" id="main-content">
+        <!-- Left: Input panel -->
+        <section class="input-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-pencil-alt"></i> Input</h2>
+                <div class="input-type-selector">
+                    <button class="type-chip active" data-type="titles">Titles</button>
+                    <button class="type-chip" data-type="doi">DOIs</button>
+                    <button class="type-chip" data-type="arxiv">arXiv IDs</button>
                 </div>
-                <div class="hero-image">
-                    <div class="floating-card">
-                        <i class="fas fa-quote-left"></i>
-                        <p class="testimonial-quote">Saved me hours of manual citation work! The smart detection features are amazing.</p>
-                        <div class="user">
-                            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
-                            <div>
-                                <h4 class="testimonial-name">Dr. A. Rahman</h4>
-                                <p class="testimonial-role">Researcher, MIT</p>
-                            </div>
-                        </div>
-                        <span class="testimonial-disclaimer">representative testimonial</span>
-                    </div>
-                </div>
+                <span class="input-count" id="inputCount">0 items</span>
             </div>
-        </div>
-    </section>
 
-    <!-- Main Tool -->
-    <section class="tool-section" id="main-content">
-        <div class="container">
-            <div class="tool-container">
-                <div class="tool-header">
-                    <h2><i class="fas fa-magic"></i> <span class="tool-header-text">Citation Generator</span></h2>
-                    <div class="tool-actions">
-                        <button class="keyboard-help-btn" id="showKeyboardHelp" title="Keyboard shortcuts">
-                            <i class="fas fa-keyboard"></i>
-                        </button>
-                        <div class="tool-tabs">
-                            <button class="tab-btn active" data-tab="input">Input Papers</button>
-                            <button class="tab-btn" data-tab="results">Results</button>
-                            <button class="tab-btn" data-tab="history">History</button>
-                            <button class="tab-btn" data-tab="settings">Settings</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Input Tab -->
-                <div class="tab-content active" id="input-tab">
-                    <div class="input-header">
-                        <div class="input-type-selector">
-                            <button class="input-type-btn active" data-type="titles">
-                                <i class="fas fa-font"></i> Titles
-                            </button>
-                            <button class="input-type-btn" data-type="doi">
-                                <i class="fas fa-link"></i> DOIs
-                            </button>
-                            <button class="input-type-btn" data-type="arxiv">
-                                <i class="fas fa-atom"></i> arXiv IDs
-                            </button>
-                        </div>
-                        <div class="input-stats">
-                            <span id="inputTypeIndicator">Detecting titles...</span>
-                            <span id="inputCount">0 items</span>
-                        </div>
-                    </div>
-                    <div class="input-methods">
-                        <div class="method-card" id="method-text">
-                            <i class="fas fa-paste"></i>
-                            <h3>Paste Input</h3>
-                            <p>Copy and paste (one per line)</p>
-                            <textarea id="paperInput" placeholder="Paste your input here, one per line...
+            <textarea id="paperInput" placeholder="Paste your input here, one per line...
 
 Examples:
 - Titles: Attention Is All You Need
 - DOIs: 10.48550/arXiv.1706.03762
 - arXiv IDs: 1706.03762" aria-label="Paper input"></textarea>
-                            <div class="input-hint">
-                                <i class="fas fa-lightbulb"></i>
-                                <span>We automatically detect the type of input (titles, DOIs, or arXiv IDs)</span>
-                            </div>
-                            <!-- Per-line validation feedback -->
-                            <div class="line-validation-panel hidden" id="lineValidation">
-                                <div class="line-validation-summary" id="lineValidationSummary"></div>
-                                <div class="line-validation-issues hidden" id="lineValidationIssues"></div>
-                            </div>
-                            <!-- Deduplication warning -->
-                            <div class="dedup-panel hidden" id="dedupPanel">
-                                <div class="dedup-summary">
-                                    <i class="fas fa-clone"></i>
-                                    <span id="dedupSummary"></span>
-                                </div>
-                                <div class="dedup-actions">
-                                    <button class="btn-small" id="dedupRemoveBtn">
-                                        <i class="fas fa-filter"></i> Remove Duplicates
-                                    </button>
-                                    <button class="btn-small btn-outline-sm" id="dedupDismissBtn">
-                                        <i class="fas fa-times"></i> Keep All
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="method-card" id="method-file">
-                            <i class="fas fa-file-upload"></i>
-                            <h3>Upload File</h3>
-                            <p>Upload .txt or .bib files (PDF support coming soon)</p>
-                            <div class="file-upload-area" id="fileUploadArea" role="button" tabindex="0" aria-label="Upload file area">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Drag & drop your file here or</p>
-                                <label for="fileInput" class="file-btn" role="button">
-                                    <i class="fas fa-folder-open"></i> Choose File
-                                </label>
-                                <input type="file" id="fileInput" accept=".txt,.bib">
-                                <p class="file-hint">Supports .txt and .bib files</p>
-                            </div>
-                            <div id="fileInfo" class="hidden">
-                                <div class="file-info-content">
-                                    <i class="fas fa-file"></i>
-                                    <div class="file-details">
-                                        <span id="fileName" class="file-name"></span>
-                                        <span id="fileCount" class="file-count"></span>
-                                    </div>
-                                </div>
-                                <button id="clearFile" class="clear-btn" aria-label="Clear file">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="action-buttons">
-                        <button id="generateBtn" class="btn-primary">
-                            <i class="fas fa-bolt"></i> Generate Citations
-                        </button>
-                        <button id="cancelBtn" class="btn-danger hidden">
-                            <i class="fas fa-stop"></i> Cancel Processing
-                        </button>
-                        <button id="exampleBtn" class="btn-secondary">
-                            <i class="fas fa-eye"></i> Load Example
-                        </button>
-                        <button id="clearBtn" class="btn-outline">
-                            <i class="fas fa-trash"></i> Clear All
-                        </button>
-                        <button id="undoBtn" class="btn-outline" disabled>
-                            <i class="fas fa-undo"></i> Undo
-                        </button>
+            <div class="input-hint">
+                <i class="fas fa-lightbulb"></i>
+                <span id="inputTypeIndicator">Detecting titles, DOIs, or arXiv IDs automatically</span>
+            </div>
+
+            <!-- Per-line validation -->
+            <div class="line-validation-panel hidden" id="lineValidation">
+                <div class="line-validation-summary" id="lineValidationSummary"></div>
+                <div class="line-validation-issues hidden" id="lineValidationIssues"></div>
+            </div>
+
+            <!-- Deduplication warning -->
+            <div class="dedup-panel hidden" id="dedupPanel">
+                <div class="dedup-summary">
+                    <i class="fas fa-clone"></i>
+                    <span id="dedupSummary"></span>
+                </div>
+                <div class="dedup-actions">
+                    <button class="btn-small" id="dedupRemoveBtn"><i class="fas fa-filter"></i> Remove Duplicates</button>
+                    <button class="btn-small btn-outline-sm" id="dedupDismissBtn"><i class="fas fa-times"></i> Keep All</button>
+                </div>
+            </div>
+
+            <!-- File upload -->
+            <div class="file-upload-area" id="fileUploadArea" role="button" tabindex="0" aria-label="Upload file area">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Drag & drop a .txt or .bib file here</p>
+                <label for="fileInput" class="file-btn">
+                    <i class="fas fa-folder-open"></i> Choose File
+                </label>
+                <input type="file" id="fileInput" accept=".txt,.bib" class="hidden-input">
+            </div>
+            <div id="fileInfo" class="hidden">
+                <div class="file-info-content">
+                    <i class="fas fa-file"></i>
+                    <div class="file-details">
+                        <span id="fileName" class="file-name"></span>
+                        <span id="fileCount" class="file-count"></span>
                     </div>
                 </div>
+                <button id="clearFile" class="clear-btn" aria-label="Clear file"><i class="fas fa-times"></i></button>
+            </div>
 
-                <!-- Results Tab -->
-                <div class="tab-content" id="results-tab">
-                    <div class="results-header">
-                        <h3><i class="fas fa-file-code"></i> Generated Citations</h3>
-                        <div class="result-actions">
-                            <!-- always-on: hidden checkbox kept for JS compat -->
-                            <input type="checkbox" id="suggestSimilar" checked style="display:none">
-                            <div class="export-format">
-                                <select id="exportFormat">
-                                    <option value="bibtex">BibTeX</option>
-                                    <option value="ris">RIS</option>
-                                    <option value="apa">APA</option>
-                                    <option value="mla">MLA</option>
-                                    <option value="chicago">Chicago</option>
-                                    <option value="harvard">Harvard</option>
-                                    <option value="plain">Plain Text</option>
-                                </select>
-                            </div>
-                            <button id="copyBtn" class="btn-secondary">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                            <button id="downloadBtn" class="btn-primary">
-                                <i class="fas fa-download"></i> Download
-                            </button>
-                            <button id="shareBtn" class="btn-outline">
-                                <i class="fas fa-share"></i> Share
-                            </button>
-                        </div>
-                    </div>
-                    <div class="stats-bar">
-                        <div class="stat-item">
-                            <i class="fas fa-check-circle"></i>
-                            <span>Successful: <span id="successCount">0</span></span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-times-circle"></i>
-                            <span>Failed: <span id="failCount">0</span></span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-clock"></i>
-                            <span>Time: <span id="timeElapsed">0s</span></span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-database"></i>
-                            <span>Source: <span id="sourceStats">-</span></span>
-                        </div>
-                    </div>
-                    <div class="results-container">
-                        <div class="results-tabs">
-                            <button class="results-tab-btn active" data-view="bibtex">
-                                <i class="fas fa-code"></i> BibTeX
-                            </button>
-                            <button class="results-tab-btn" data-view="preview">
-                                <i class="fas fa-eye"></i> Preview
-                            </button>
-                            <button class="results-tab-btn" data-view="raw">
-                                <i class="fas fa-file-alt"></i> Raw Data
-                            </button>
-                        </div>
-                        <div class="results-content">
-                            <div class="result-view active" id="bibtexView">
-                                <pre id="bibtexOutput">% Your generated citations will appear here
-% Process papers to see results</pre>
-                            </div>
-                            <div class="result-view" id="previewView">
-                                <div class="citation-preview">
-                                    <div class="preview-list" id="citationPreview">
-                                        <!-- Formatted citations will appear here -->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="result-view" id="rawView">
-                                <pre id="rawDataOutput">% Raw data will appear here</pre>
-                            </div>
-                        </div>
-                        <div class="progress-container hidden" id="progressContainer">
-                            <div class="progress-header">
-                                <h4><i class="fas fa-sync fa-spin"></i> Processing Papers...</h4>
-                                <span id="progressText">0/0</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" id="progressFill"></div>
-                            </div>
-                            <div class="current-paper" id="currentPaper"></div>
-                            <div class="retry-queue hidden" id="retryQueue">
-                                <i class="fas fa-redo"></i>
-                                <span id="retryCount">0</span> items will be retried
-                            </div>
-                        </div>
-                    </div>
+            <div class="action-buttons">
+                <button id="generateBtn" class="btn-primary">
+                    <i class="fas fa-bolt"></i> Generate Citations
+                </button>
+                <button id="cancelBtn" class="btn-danger hidden">
+                    <i class="fas fa-stop"></i> Cancel
+                </button>
+                <button id="exampleBtn" class="btn-secondary">
+                    <i class="fas fa-eye"></i> Load Example
+                </button>
+                <button id="clearBtn" class="btn-outline">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+                <button id="undoBtn" class="btn-outline" disabled>
+                    <i class="fas fa-undo"></i> Undo
+                </button>
+            </div>
 
-                    <!-- Similar Papers Panel -->
-                    <div class="similar-papers-section hidden" id="similarPapersSection">
-                        <div class="similar-papers-header">
-                            <div class="similar-papers-title">
-                                <i class="fas fa-lightbulb"></i>
-                                <h4>Related Papers You Might Need</h4>
-                                <span class="similar-badge" id="similarCount">0 found</span>
-                            </div>
-                            <p class="similar-desc">These papers are in the same research area. Check the ones you want, then add them to your citation queue.</p>
-                            <div class="similar-controls">
-                                <button class="btn-small" id="selectAllSuggestions">
-                                    <i class="fas fa-check-square"></i> Select All
-                                </button>
-                                <button class="btn-small btn-outline-sm" id="deselectAllSuggestions">
-                                    <i class="fas fa-square"></i> Deselect All
-                                </button>
-                                <button class="btn-small btn-outline-sm" id="refreshSuggestions" title="Re-fetch related papers">
-                                    <i class="fas fa-sync-alt"></i> Refresh
-                                </button>
-                                <button class="btn-secondary" id="addSelectedSuggestions" disabled>
-                                    <i class="fas fa-plus"></i> Add selected to queue
-                                </button>
-                            </div>
-                        </div>
-                        <div class="similar-papers-list" id="similarPapersList"></div>
-                    </div>
+            <div class="input-stats">
+                <span id="paperCount">0 papers ready</span>
+            </div>
+        </section>
 
-                    <!-- Shareable Link Panel -->
-                    <div class="share-panel hidden" id="sharePanel">
-                        <div class="share-panel-header">
-                            <h4><i class="fas fa-link"></i> Shareable Citation Link</h4>
-                            <button class="btn-small btn-outline-sm" id="closeSharePanel"><i class="fas fa-times"></i></button>
-                        </div>
-                        <div class="share-panel-body">
-                            <p>Copy this link to share your citation list. Anyone with the link can load these papers into Citation Fetcher.</p>
-                            <div class="share-input-row">
-                                <input type="text" id="shareLinkInput" readonly>
-                                <button class="btn-primary" id="copyShareLink"><i class="fas fa-copy"></i> Copy</button>
-                            </div>
-                            <small class="share-note"><i class="fas fa-info-circle"></i> No data is stored on servers — the link encodes your paper list.</small>
-                        </div>
+        <!-- Right: Results panel -->
+        <section class="results-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-file-code"></i> Results</h2>
+                <div class="results-controls">
+                    <select id="exportFormat">
+                        <option value="bibtex">BibTeX</option>
+                        <option value="ris">RIS</option>
+                        <option value="apa">APA</option>
+                        <option value="mla">MLA</option>
+                        <option value="chicago">Chicago</option>
+                        <option value="harvard">Harvard</option>
+                        <option value="plain">Plain Text</option>
+                    </select>
+                    <button id="copyBtn" class="btn-secondary" title="Copy to clipboard">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                    <button id="downloadBtn" class="btn-primary" title="Download file">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button id="shareBtn" class="btn-outline" title="Share link">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-container hidden" id="progressContainer">
+                <div class="progress-header">
+                    <h4><i class="fas fa-sync fa-spin"></i> Processing...</h4>
+                    <span id="progressText">0/0</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="current-paper" id="currentPaper"></div>
+                <div class="retry-queue hidden" id="retryQueue">
+                    <i class="fas fa-redo"></i>
+                    <span id="retryCount">0</span> items will be retried
+                </div>
+            </div>
+
+            <!-- Stats bar -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Success: <span id="successCount">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Failed: <span id="failCount">0</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Time: <span id="timeElapsed">0s</span></span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-database"></i>
+                    <span>Source: <span id="sourceStats">-</span></span>
+                </div>
+            </div>
+
+            <!-- Results content -->
+            <div class="results-tabs">
+                <button class="results-tab-btn active" data-view="bibtex">
+                    <i class="fas fa-code"></i> BibTeX
+                </button>
+                <button class="results-tab-btn" data-view="preview">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button class="results-tab-btn" data-view="raw">
+                    <i class="fas fa-file-alt"></i> Raw
+                </button>
+            </div>
+
+            <div class="results-content">
+                <div class="result-view active" id="bibtexView">
+                    <pre id="bibtexOutput">% Your generated citations will appear here
+% Enter papers on the left and click Generate</pre>
+                </div>
+                <div class="result-view" id="previewView">
+                    <div class="citation-preview">
+                        <div class="preview-list" id="citationPreview"></div>
                     </div>
                 </div>
+                <div class="result-view" id="rawView">
+                    <pre id="rawDataOutput">% Raw data will appear here</pre>
+                </div>
+            </div>
 
-                <!-- History Tab -->
-                <div class="tab-content" id="history-tab">
-                    <div class="history-header">
-                        <h3><i class="fas fa-history"></i> Citation History</h3>
-                        <div class="history-actions">
-                            <button id="clearHistory" class="btn-outline">
-                                <i class="fas fa-trash"></i> Clear History
-                            </button>
-                            <button id="exportHistory" class="btn-secondary">
-                                <i class="fas fa-download"></i> Export
-                            </button>
-                        </div>
+            <!-- Similar Papers -->
+            <div class="similar-papers-section hidden" id="similarPapersSection">
+                <div class="similar-papers-header">
+                    <div class="similar-papers-title">
+                        <i class="fas fa-lightbulb"></i>
+                        <h4>Related Papers</h4>
+                        <span class="similar-badge" id="similarCount">0 found</span>
                     </div>
-                    <div class="history-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-save"></i>
-                            <span>Saved: <span id="historyCount">0</span> citations</span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>Last: <span id="lastHistoryDate">Never</span></span>
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-chart-bar"></i>
-                            <span>Success Rate: <span id="historySuccessRate">0%</span></span>
-                        </div>
-                    </div>
-                    <div class="history-toolbar">
-                        <div class="history-search">
-                            <i class="fas fa-search"></i>
-                            <input type="text" id="historySearch" placeholder="Search by title, author, or source..." autocomplete="off">
-                            <button class="btn-small btn-search" id="historySearchBtn" title="Search">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                        <div class="history-filters">
-                            <select id="historySourceFilter">
-                                <option value="all">All Sources</option>
-                                <option value="crossref">Crossref</option>
-                                <option value="arxiv">ArXiv</option>
-                                <option value="semantic">Semantic Scholar</option>
-                            </select>
-                            <select id="historySortOrder">
-                                <option value="newest">Newest First</option>
-                                <option value="oldest">Oldest First</option>
-                                <option value="az">A-Z</option>
-                            </select>
-                            <button class="btn-small btn-outline-sm" id="historyClearSearch" title="Clear search">
-                                <i class="fas fa-times"></i> Clear
-                            </button>
-                        </div>
-                        <div class="history-folders-bar">
-                            <span class="folder-label"><i class="fas fa-folder"></i> Folders:</span>
-                            <div class="folder-chips" id="folderChips">
-                                <button class="folder-chip active" data-folder="all">All</button>
-                            </div>
-                            <button class="btn-small" id="newFolderBtn" title="Create new folder"><i class="fas fa-plus"></i> New</button>
-                        </div>
-                    </div>
-                    <div class="history-container">
-                        <div class="history-list" id="historyList">
-                            <div class="empty-history">
-                                <i class="fas fa-history fa-3x"></i>
-                                <h4>No History Yet</h4>
-                                <p>Your fetched citations will appear here for quick access</p>
-                                <button class="btn-primary" onclick="switchTab('input')">
-                                    <i class="fas fa-plus"></i> Start Generating
-                                </button>
-                            </div>
-                        </div>
+                    <div class="similar-controls">
+                        <button class="btn-small" id="selectAllSuggestions"><i class="fas fa-check-square"></i> Select All</button>
+                        <button class="btn-small btn-outline-sm" id="deselectAllSuggestions"><i class="fas fa-square"></i> Deselect</button>
+                        <button class="btn-small btn-outline-sm" id="refreshSuggestions"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        <button class="btn-secondary" id="addSelectedSuggestions" disabled><i class="fas fa-plus"></i> Add to Queue</button>
                     </div>
                 </div>
+                <div class="similar-papers-list" id="similarPapersList"></div>
+            </div>
 
-                <!-- Settings Tab -->
-                <div class="tab-content" id="settings-tab">
-                    <div class="settings-grid">
-                        <div class="setting-card">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <h4>Processing Speed</h4>
-                            <p>Delay between API requests (seconds)</p>
-                            <div class="slider-container">
-                                <input type="range" id="delaySlider" min="0.5" max="3" step="0.1" value="1">
-                                <span id="delayValue">1.0s</span>
-                            </div>
-                        </div>
-                        <div class="setting-card">
-                            <i class="fas fa-envelope"></i>
-                            <h4>Crossref Email</h4>
-                            <p>For polite API usage (optional)</p>
-                            <input type="email" id="userEmail" placeholder="your.email@example.com">
-                            <small>Crossref requires this for high-volume usage</small>
-                        </div>
-                        <div class="setting-card">
-                            <i class="fas fa-database"></i>
-                            <h4>API Priority</h4>
-                            <p>Which API to try first</p>
-                            <div class="radio-group">
-                                <label>
-                                    <input type="radio" name="apiPriority" value="crossref" checked>
-                                    Crossref (more accurate)
-                                </label>
-                                <label>
-                                    <input type="radio" name="apiPriority" value="arxiv">
-                                    ArXiv (faster for preprints)
-                                </label>
-                                <label>
-                                    <input type="radio" name="apiPriority" value="auto">
-                                    Auto-detect
-                                </label>
-                            </div>
-                        </div>
-                        <div class="setting-card">
-                            <i class="fas fa-code"></i>
-                            <h4>Output Format</h4>
-                            <p>BibTeX formatting options</p>
-                            <div class="checkbox-group">
-                                <label>
-                                    <input type="checkbox" id="formatIndent" checked>
-                                    Pretty indentation
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="sortAlphabetically">
-                                    Sort entries alphabetically
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="includeComments" checked>
-                                    Include helpful comments
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="autoSaveHistory" checked>
-                                    Auto-save to history
-                                </label>
-                            </div>
-                        </div>
-                        <div class="setting-card">
-                            <i class="fas fa-book"></i>
-                            <h4>Retry Failed</h4>
-                            <p>Number of retry attempts</p>
-                            <div class="slider-container">
-                                <input type="range" id="retrySlider" min="0" max="3" step="1" value="1">
-                                <span id="retryValue">1 retry</span>
-                            </div>
-                        </div>
-                        <div class="setting-card">
-                            <i class="fas fa-cogs"></i>
-                            <h4>Advanced Settings</h4>
-                            <div class="checkbox-group">
-                                <label>
-                                    <input type="checkbox" id="enableDarkMode">
-                                    Enable dark mode
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="enableShortcuts" checked>
-                                    Enable keyboard shortcuts
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="enableAnalytics">
-                                    Send anonymous usage data
-                                </label>
-                                <label>
-                                    <input type="checkbox" id="enableOffline" checked>
-                                    Enable offline mode
-                                </label>
-                            </div>
-                        </div>
+            <!-- Share panel -->
+            <div class="share-panel hidden" id="sharePanel">
+                <div class="share-panel-header">
+                    <h4><i class="fas fa-link"></i> Shareable Link</h4>
+                    <button class="btn-icon" id="closeSharePanel"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="share-panel-body">
+                    <p>Copy this link to share your citation list. Anyone with the link can load these papers.</p>
+                    <div class="share-input-row">
+                        <input type="text" id="shareLinkInput" readonly>
+                        <button class="btn-primary" id="copyShareLink"><i class="fas fa-copy"></i> Copy</button>
                     </div>
-                    <div class="settings-actions">
-                        <button id="resetSettings" class="btn-outline">
-                            <i class="fas fa-redo"></i> Reset to Defaults
-                        </button>
-                        <button id="saveSettings" class="btn-primary">
-                            <i class="fas fa-save"></i> Save Settings
-                        </button>
+                    <small><i class="fas fa-info-circle"></i> No data is stored on servers — the link encodes your paper list.</small>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Slide-over: History -->
+    <aside class="slide-panel" id="historyPanel">
+        <div class="slide-header">
+            <h3><i class="fas fa-history"></i> Citation History</h3>
+            <button class="btn-icon" id="closeHistory"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="slide-body">
+            <div class="history-stats">
+                <div class="stat-item"><i class="fas fa-save"></i> <span>Saved: <span id="historyCount">0</span> citations</span></div>
+                <div class="stat-item"><i class="fas fa-calendar"></i> <span>Last: <span id="lastHistoryDate">Never</span></span></div>
+                <div class="stat-item"><i class="fas fa-chart-bar"></i> <span>Rate: <span id="historySuccessRate">0%</span></span></div>
+            </div>
+            <div class="history-toolbar">
+                <div class="history-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="historySearch" placeholder="Search by title, author, or source..." autocomplete="off">
+                </div>
+                <div class="history-filters">
+                    <select id="historySourceFilter">
+                        <option value="all">All Sources</option>
+                        <option value="crossref">Crossref</option>
+                        <option value="arxiv">ArXiv</option>
+                        <option value="semantic">Semantic Scholar</option>
+                    </select>
+                    <select id="historySortOrder">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="az">A-Z</option>
+                    </select>
+                </div>
+            </div>
+            <div class="history-folders-bar">
+                <span class="folder-label"><i class="fas fa-folder"></i> Folders:</span>
+                <div class="folder-chips" id="folderChips">
+                    <button class="folder-chip active" data-folder="all">All</button>
+                </div>
+                <button class="btn-small" id="newFolderBtn"><i class="fas fa-plus"></i> New</button>
+            </div>
+            <div class="history-container">
+                <div class="history-list" id="historyList">
+                    <div class="empty-history">
+                        <i class="fas fa-history fa-3x"></i>
+                        <h4>No History Yet</h4>
+                        <p>Your fetched citations will appear here for quick access</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+        <div class="slide-footer">
+            <button id="clearHistory" class="btn-outline"><i class="fas fa-trash"></i> Clear History</button>
+            <button id="exportHistory" class="btn-secondary"><i class="fas fa-download"></i> Export</button>
+        </div>
+    </aside>
+
+    <!-- Slide-over: Settings -->
+    <aside class="slide-panel" id="settingsPanel">
+        <div class="slide-header">
+            <h3><i class="fas fa-cog"></i> Settings</h3>
+            <button class="btn-icon" id="closeSettings"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="slide-body">
+            <div class="settings-grid">
+                <div class="setting-card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <h4>Processing Speed</h4>
+                    <p>Delay between API requests (seconds)</p>
+                    <div class="slider-container">
+                        <input type="range" id="delaySlider" min="0.5" max="3" step="0.1" value="1">
+                        <span id="delayValue">1.0s</span>
+                    </div>
+                </div>
+                <div class="setting-card">
+                    <i class="fas fa-envelope"></i>
+                    <h4>Crossref Email</h4>
+                    <p>For polite API usage (optional)</p>
+                    <input type="email" id="userEmail" placeholder="your.email@example.com">
+                </div>
+                <div class="setting-card">
+                    <i class="fas fa-database"></i>
+                    <h4>API Priority</h4>
+                    <p>Which API to try first</p>
+                    <div class="radio-group">
+                        <label><input type="radio" name="apiPriority" value="crossref" checked> Crossref (more accurate)</label>
+                        <label><input type="radio" name="apiPriority" value="arxiv"> ArXiv (faster for preprints)</label>
+                        <label><input type="radio" name="apiPriority" value="auto"> Auto-detect</label>
+                    </div>
+                </div>
+                <div class="setting-card">
+                    <i class="fas fa-code"></i>
+                    <h4>Output Format</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="formatIndent" checked> Pretty indentation</label>
+                        <label><input type="checkbox" id="sortAlphabetically"> Sort alphabetically</label>
+                        <label><input type="checkbox" id="includeComments" checked> Include comments</label>
+                        <label><input type="checkbox" id="autoSaveHistory" checked> Auto-save to history</label>
+                    </div>
+                </div>
+                <div class="setting-card">
+                    <i class="fas fa-book"></i>
+                    <h4>Retry Failed</h4>
+                    <div class="slider-container">
+                        <input type="range" id="retrySlider" min="0" max="3" step="1" value="1">
+                        <span id="retryValue">1 retry</span>
+                    </div>
+                </div>
+                <div class="setting-card">
+                    <i class="fas fa-cogs"></i>
+                    <h4>Advanced</h4>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="enableDarkMode"> Enable dark mode</label>
+                        <label><input type="checkbox" id="enableShortcuts" checked> Keyboard shortcuts</label>
+                        <label><input type="checkbox" id="enableAnalytics"> Anonymous usage data</label>
+                        <label><input type="checkbox" id="enableOffline" checked> Offline mode</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer">
+            <button id="resetSettings" class="btn-outline"><i class="fas fa-redo"></i> Reset to Defaults</button>
+            <button id="saveSettings" class="btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+        </div>
+    </aside>
 
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
             <h2 class="section-title">Why Use Citation Fetcher?</h2>
-            <p class="section-subtitle">Everything you need to generate perfect BibTeX citations in seconds, with zero manual effort.</p>
+            <p class="section-subtitle">Everything you need to generate perfect BibTeX citations in seconds.</p>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-robot"></i></div>
                     <h3>Smart Automation</h3>
                     <p>Automatically fetches complete citation data including authors, year, journal, and DOI.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-exchange-alt"></i></div>
                     <h3>Multiple APIs</h3>
                     <p>Uses Crossref, ArXiv, and Semantic Scholar APIs for maximum coverage.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-globe"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
                     <h3>Unicode Support</h3>
                     <p>Handles international characters and special symbols in paper titles.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
                     <h3>Privacy First</h3>
                     <p>All processing happens in your browser. No data is sent to our servers.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
                     <h3>Batch Processing</h3>
                     <p>Process hundreds of papers at once with automatic rate limiting.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-history"></i>
-                    </div>
+                    <div class="feature-icon"><i class="fas fa-history"></i></div>
                     <h3>Citation History</h3>
                     <p>Save and manage your citation history for future reference.</p>
                 </div>
@@ -676,37 +479,27 @@ Examples:
     <section class="how-to" id="how-to">
         <div class="container">
             <h2 class="section-title">How To Use</h2>
-            <p class="section-subtitle">Three simple steps to go from paper titles to ready-to-use BibTeX in under a minute.</p>
+            <p class="section-subtitle">Three simple steps from paper titles to ready-to-use BibTeX.</p>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3>Prepare Your Papers</h3>
-                        <p>Gather paper titles, DOIs, or arXiv IDs. You can paste them directly or upload a file.</p>
-                        <code>Attention Is All You Need\n10.48550/arXiv.1706.03762\n1706.03762v5</code>
+                        <h3>Enter Your Papers</h3>
+                        <p>Paste paper titles, DOIs, or arXiv IDs in the input panel. Upload a file or drag and drop.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <h3>Generate Citations</h3>
-                        <p>Click "Generate Citations" and watch as we fetch BibTeX entries from academic databases.</p>
-                        <div class="step-image">
-                            <i class="fas fa-sync fa-spin"></i>
-                            <span>Smart detection in progress...</span>
-                        </div>
+                        <p>Click Generate and watch as citations are fetched from Crossref, ArXiv, and Semantic Scholar.</p>
                     </div>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <h3>Copy & Download</h3>
-                        <p>Copy the BibTeX to clipboard, download in various formats, or share with colleagues.</p>
-                        <div class="step-actions">
-                            <button class="btn-small" tabindex="-1"><i class="fas fa-copy"></i> Copy</button>
-                            <button class="btn-small btn-primary" tabindex="-1"><i class="fas fa-download"></i> Download</button>
-                            <button class="btn-small btn-outline" tabindex="-1"><i class="fas fa-share"></i> Share</button>
-                        </div>
+                        <h3>Copy & Export</h3>
+                        <p>Copy to clipboard, download as BibTeX/RIS/APA/MLA, or share with a link.</p>
                     </div>
                 </div>
             </div>
@@ -735,7 +528,7 @@ Examples:
     <section class="api-info" id="api">
         <div class="container">
             <h2 class="section-title">Powered By Academic APIs</h2>
-            <p class="section-subtitle">We tap into the most trusted academic data sources to ensure your citations are always accurate.</p>
+            <p class="section-subtitle">Trusted academic data sources for accurate citations.</p>
             <div class="api-cards">
                 <div class="api-card crossref">
                     <div class="api-header">
@@ -743,15 +536,12 @@ Examples:
                         <h3>Crossref API</h3>
                         <span class="api-badge">Primary</span>
                     </div>
-                    <p>Provides high-quality metadata from thousands of academic publishers.</p>
+                    <p>High-quality metadata from thousands of academic publishers.</p>
                     <ul>
                         <li><i class="fas fa-check"></i> Most accurate citation data</li>
                         <li><i class="fas fa-check"></i> Includes DOI links</li>
                         <li><i class="fas fa-check"></i> Structured BibTeX output</li>
                     </ul>
-                    <a href="https://www.crossref.org/services/metadata-delivery/rest-api/" target="_blank" class="api-link">
-                        <i class="fas fa-external-link-alt"></i> Visit Crossref API
-                    </a>
                 </div>
                 <div class="api-card arxiv">
                     <div class="api-header">
@@ -765,9 +555,6 @@ Examples:
                         <li><i class="fas fa-check"></i> Great for recent papers</li>
                         <li><i class="fas fa-check"></i> No rate limits</li>
                     </ul>
-                    <a href="https://arxiv.org/help/api" target="_blank" class="api-link">
-                        <i class="fas fa-external-link-alt"></i> Visit ArXiv API
-                    </a>
                 </div>
                 <div class="api-card semantic">
                     <div class="api-header">
@@ -781,9 +568,6 @@ Examples:
                         <li><i class="fas fa-check"></i> Citation graphs</li>
                         <li><i class="fas fa-check"></i> Abstract analysis</li>
                     </ul>
-                    <a href="https://api.semanticscholar.org/" target="_blank" class="api-link">
-                        <i class="fas fa-external-link-alt"></i> Visit Semantic Scholar API
-                    </a>
                 </div>
             </div>
         </div>
@@ -798,43 +582,31 @@ Examples:
                     <h2>Citation<span>Fetcher</span></h2>
                     <p>Free tool for academic researchers</p>
                     <div class="app-version">
-                        <span id="appVersion">v2.0.0</span>
-                        <span class="offline-status" id="offlineStatus">
-                            <i class="fas fa-wifi"></i> Online
-                        </span>
+                        <span id="appVersion">v2.1</span>
+                        <span class="offline-status" id="offlineStatus"><i class="fas fa-wifi"></i> Online</span>
                     </div>
                 </div>
                 <div class="footer-links">
                     <div class="footer-column">
                         <h4>Tool</h4>
-                        <a href="#home">Home</a>
+                        <a href="#main-content">Generator</a>
                         <a href="#features">Features</a>
                         <a href="#how-to">How To</a>
+                        <a href="#bookmarklet">Bookmarklet</a>
                         <a href="#api">APIs</a>
-                        <a href="#history" id="footerHistoryLink">History</a>
                     </div>
                     <div class="footer-column">
                         <h4>Resources</h4>
-                        <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank">GitHub Repository</a>
+                        <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank">GitHub</a>
                         <a href="https://github.com/hhhpraise/citation-fetcher/issues" target="_blank">Report Issues</a>
-                        <a href="https://github.com/hhhpraise/citation-fetcher/wiki" target="_blank">Documentation</a>
                         <a href="#" id="privacyLink">Privacy Policy</a>
                         <a href="#" id="keyboardShortcutsLink">Keyboard Shortcuts</a>
                     </div>
                     <div class="footer-column">
                         <h4>Connect</h4>
-                        <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="portfolio-link">
-                            <i class="fas fa-user-circle"></i> Developer Portfolio
-                        </a>
-                        <a href="https://twitter.com/ArowoloPraise" target="_blank">
-                            <i class="fab fa-twitter"></i> Twitter
-                        </a>
-                        <a href="https://github.com/hhhpraise" target="_blank">
-                            <i class="fab fa-github"></i> GitHub
-                        </a>
-                        <a href="/cdn-cgi/l/email-protection#b3c3c1d2dac0d6ded2dadf8080f3d4ded2dadf9dd0dcde">
-                            <i class="fas fa-envelope"></i> Email
-                        </a>
+                        <a href="https://hhhpraise.github.io/portfolio/" target="_blank"><i class="fas fa-user-circle"></i> Portfolio</a>
+                        <a href="https://twitter.com/ArowoloPraise" target="_blank"><i class="fab fa-twitter"></i> Twitter</a>
+                        <a href="https://github.com/hhhpraise" target="_blank"><i class="fab fa-github"></i> GitHub</a>
                     </div>
                 </div>
             </div>
@@ -848,26 +620,19 @@ Examples:
                         <h4>Meet the Developer</h4>
                         <p>Created by <strong>Hhhpraise</strong>, a passionate developer and researcher</p>
                         <div class="developer-links">
-                            <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="btn-portfolio">
-                                <i class="fas fa-external-link-alt"></i> View Full Portfolio
-                            </a>
-                            <button class="btn-outline" id="donateBtn">
-                                <i class="fas fa-coffee"></i> Buy me a coffee
-                            </button>
+                            <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="btn-portfolio"><i class="fas fa-external-link-alt"></i> View Portfolio</a>
+                            <button class="btn-outline" id="donateBtn"><i class="fas fa-coffee"></i> Buy me a coffee</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Newsletter Section -->
             <div class="newsletter-section">
                 <h4><i class="fas fa-newspaper"></i> Stay Updated</h4>
                 <p>Get tips, updates, and new features in your inbox</p>
                 <form id="newsletterForm">
                     <input type="email" placeholder="Your email address" required>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-paper-plane"></i> Subscribe
-                    </button>
+                    <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Subscribe</button>
                 </form>
                 <small>Coming soon — newsletter signup is not yet active.</small>
             </div>
@@ -898,7 +663,7 @@ Examples:
             <i class="fas fa-download"></i>
             <div>
                 <h4>Install Citation Fetcher</h4>
-                <p>Install our app for offline use and quick access</p>
+                <p>Install for offline use and quick access</p>
             </div>
             <div class="install-actions">
                 <button class="btn-outline" id="installLater">Later</button>
@@ -917,18 +682,8 @@ Examples:
             <div class="modal-body">
                 <p><strong>No Data Collection</strong></p>
                 <p>Citation Fetcher runs entirely in your browser. No paper titles or citation data are sent to any server except the official Crossref and ArXiv APIs.</p>
-
-                <p><strong>Crossref API Usage</strong></p>
-                <p>When using Crossref API, we include a generic email address (<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="503339243124393f3e7d36352433383522103739243825327e393f">[email&#160;protected]</a>) for polite API usage as required by their terms.</p>
-
-                <p><strong>ArXiv API Usage</strong></p>
-                <p>ArXiv API requests are anonymous and do not require any identification.</p>
-
                 <p><strong>Local Storage</strong></p>
                 <p>We only store your preferences (like email and delay settings) locally in your browser. You can clear this anytime from settings.</p>
-
-                <p><strong>Offline Functionality</strong></p>
-                <p>The app can work offline after first visit. No data is sent to external servers when offline.</p>
             </div>
         </div>
     </div>
@@ -936,11 +691,8 @@ Examples:
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Accessible Live Region for Screen Readers -->
+    <!-- Accessible Live Region -->
     <div aria-live="polite" aria-atomic="true" class="sr-only" id="liveRegion"></div>
-
-    <!-- Scripts -->
-    <script src="script.js"></script>
 
     <!-- Inline BibTeX Editor Modal -->
     <div class="modal hidden" id="editorModal">
@@ -1006,123 +758,54 @@ Examples:
         </div>
     </div>
 
-<!-- QR Code Modal -->
-<div class="modal hidden" id="qrModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-qrcode"></i> Support Developer</h3>
-            <button class="modal-close" id="closeQR">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="payment-options">
-                <button class="payment-option active" data-payment="alipay">
-                    <i class="fab fa-alipay"></i>
-                    <span>Alipay (Payment)</span>
-                </button>
-                <button class="payment-option" data-payment="wechat">
-                    <i class="fab fa-weixin"></i>
-                    <span>WeChat (Add Contact)</span>
-                </button>
+    <!-- QR Code Modal -->
+    <div class="modal hidden" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-qrcode"></i> Support Developer</h3>
+                <button class="modal-close" id="closeQR">&times;</button>
             </div>
-
-            <div class="qr-content">
-                <!-- Alipay QR -->
-                <div class="qr-section active" id="alipaySection">
-                    <div class="qr-image-container">
-                        <img src="images/donate/alipay-qr.png" alt="Alipay QR Code for payment" class="qr-image">
-                        <div class="qr-overlay">
-                            <i class="fas fa-expand-alt"></i>
-                            <span>Click to enlarge</span>
+            <div class="modal-body">
+                <div class="payment-options">
+                    <button class="payment-option active" data-payment="alipay"><i class="fab fa-alipay"></i><span>Alipay</span></button>
+                    <button class="payment-option" data-payment="wechat"><i class="fab fa-weixin"></i><span>WeChat</span></button>
+                </div>
+                <div class="qr-content">
+                    <div class="qr-section active" id="alipaySection">
+                        <div class="qr-image-container">
+                            <img src="images/donate/alipay-qr.png" alt="Alipay QR Code" class="qr-image">
+                        </div>
+                        <div class="qr-instructions">
+                            <h5><i class="fab fa-alipay"></i> Alipay Payment</h5>
+                            <ol>
+                                <li>Open Alipay app → Scan → Point at QR code</li>
+                                <li>Enter any amount</li>
+                                <li>Add note: <code>Support Citation Fetcher</code></li>
+                            </ol>
                         </div>
                     </div>
-                    <div class="qr-instructions">
-                        <h5><i class="fab fa-alipay"></i> Alipay Payment</h5>
-                        <ol>
-                            <li><strong>Option A:</strong> Click "Open Alipay" button below</li>
-                            <li><strong>Option B:</strong> Open Alipay app → Scan → Point at QR code</li>
-                            <li>Enter any amount (every bit helps!)</li>
-                            <li>Add note: <code>Support Citation Fetcher</code></li>
-                        </ol>
-                        <div class="qr-mobile-action">
-                            <button class="btn-primary" id="openAlipay">
-                                <i class="fab fa-alipay"></i> Open Alipay App
-                            </button>
+                    <div class="qr-section" id="wechatSection">
+                        <div class="qr-image-container">
+                            <img src="images/donate/wechat-qr.png" alt="WeChat QR Code" class="qr-image">
                         </div>
-                        <p class="mobile-note">
-                            <i class="fas fa-mobile-alt"></i>
-                            On mobile? The app will open automatically
-                        </p>
+                        <div class="qr-instructions">
+                            <h5><i class="fab fa-weixin"></i> WeChat Contact</h5>
+                            <ol>
+                                <li>Open WeChat app → Scan → Point at QR code</li>
+                                <li>Add me as contact</li>
+                                <li>Send message: <code>Support developer</code></li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
-
-                <!-- WeChat QR -->
-                <div class="qr-section" id="wechatSection">
-                    <div class="qr-image-container">
-                        <img src="images/donate/wechat-qr.png" alt="WeChat QR Code to add developer" class="qr-image">
-                        <div class="qr-overlay">
-                            <i class="fas fa-expand-alt"></i>
-                            <span>Click to enlarge</span>
-                        </div>
-                    </div>
-                    <div class="qr-instructions">
-                        <h5><i class="fab fa-weixin"></i> WeChat Contact</h5>
-                        <ol>
-                            <li><strong>Option A:</strong> Click "Open WeChat" button below</li>
-                            <li><strong>Option B:</strong> Open WeChat app → Scan → Point at QR code</li>
-                            <li>Add me as contact</li>
-                            <li>Send message: <code>Support developer</code></li>
-                            <li>I'll provide payment options</li>
-                        </ol>
-                        <div class="qr-mobile-action">
-                            <button class="btn-primary" id="openWeChat">
-                                <i class="fab fa-weixin"></i> Open WeChat App
-                            </button>
-                        </div>
-                        <p class="mobile-note">
-                            <i class="fas fa-mobile-alt"></i>
-                            On mobile? The app will open automatically
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="qr-footer">
-                <div class="support-note">
-                    <i class="fas fa-heart"></i>
-                    <span>Your support helps improve Citation Fetcher for everyone!</span>
-                </div>
-                <div class="qr-actions">
-                    <button class="btn-outline" id="saveQR">
-                        <i class="fas fa-download"></i> Save QR Code
-                    </button>
+                <div class="qr-footer">
+                    <div class="support-note"><i class="fas fa-heart"></i> <span>Your support helps improve Citation Fetcher!</span></div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- QR Enlargement Modal -->
-<div class="modal hidden" id="enlargeModal">
-    <div class="modal-content fullscreen">
-        <div class="modal-header">
-            <h3 id="enlargeTitle">QR Code</h3>
-            <button class="modal-close" id="closeEnlarge">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="enlarge-container">
-                <img id="enlargedQR" src="" alt="Enlarged QR Code">
-            </div>
-            <div class="enlarge-actions">
-                <button class="btn-primary" id="downloadEnlarged">
-                    <i class="fas fa-download"></i> Download
-                </button>
-                <button class="btn-outline" id="closeEnlargeBottom">
-                    <i class="fas fa-times"></i> Close
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
+    <!-- Scripts (loaded after all HTML) -->
+    <script src="script.js"></script>
 </body>
 </html>
