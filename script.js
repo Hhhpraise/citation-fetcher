@@ -585,6 +585,11 @@ async function processPapers() {
     // Switch to results tab
     switchTab('results');
 
+    // Hide empty state, activate connector animation
+    document.getElementById('resultsEmptyState')?.classList.add('hidden');
+    const inputPanel = document.querySelector('.input-panel');
+    if (inputPanel) inputPanel.classList.add('processing');
+
     // Reset state
     state.isProcessing = true;
     state.results = [];
@@ -682,8 +687,11 @@ async function processPapers() {
     state.isProcessing = false;
     displayResults();
 
+    // Deactivate connector animation
+    const ipEl = document.querySelector('.input-panel');
+    if (ipEl) ipEl.classList.remove('processing');
+
     // Always fetch similar papers when there are successful results.
-    // Switch to results tab first so the user sees everything in one place.
     elements.cancelBtn.classList.add('hidden');
     elements.generateBtn.classList.remove('hidden');
     elements.progressContainer.classList.add('hidden');
@@ -759,6 +767,7 @@ function detectResultIssues(results) {
 
 function displayResults() {
     let output = '';
+    const emptyState = document.getElementById('resultsEmptyState');
 
     if (state.settings.includeComments) {
         const elapsed = ((Date.now() - state.stats.startTime) / 1000).toFixed(1);
@@ -772,6 +781,29 @@ function displayResults() {
         output += `% Processing time: ${elapsed}s\n`;
         output += `% Sources: Crossref (${state.stats.apiSource.crossref}), ArXiv (${state.stats.apiSource.arxiv}), Semantic Scholar (${state.stats.apiSource.semantic})\n`;
         output += `\n`;
+    }
+
+    // Show/hide empty state
+    if (state.results.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        document.getElementById('bibtexView').classList.add('hidden');
+        document.getElementById('rawView').classList.add('hidden');
+        document.getElementById('previewView').classList.add('hidden');
+        if (document.querySelector('.results-tabs')) document.querySelector('.results-tabs').classList.add('hidden');
+    } else {
+        if (emptyState) emptyState.classList.add('hidden');
+        document.getElementById('bibtexView').classList.remove('hidden');
+        document.getElementById('bibtexView').classList.add('active');
+        document.getElementById('rawView').classList.remove('hidden');
+        document.getElementById('rawView').classList.remove('active');
+        document.getElementById('previewView').classList.remove('hidden');
+        document.getElementById('previewView').classList.remove('active');
+        const tabsEl = document.querySelector('.results-tabs');
+        if (tabsEl) tabsEl.classList.remove('hidden');
+        // Reset tab buttons to BibTeX active
+        document.querySelectorAll('.results-tab-btn').forEach(b => b.classList.remove('active'));
+        const bibtexTab = document.querySelector('.results-tab-btn[data-view="bibtex"]');
+        if (bibtexTab) bibtexTab.classList.add('active');
     }
 
     // Detect issues and annotate BibTeX with inline comments
@@ -1350,6 +1382,18 @@ function clearAll() {
             elements.paperInput.value = '';
             updatePaperCount();
             clearFile();
+            // Reset results view to empty state
+            state.results = [];
+            state.stats = { success: 0, failed: 0, startTime: Date.now(), apiSource: { crossref: 0, arxiv: 0, semantic: 0 } };
+            const emptyState = document.getElementById('resultsEmptyState');
+            if (emptyState) emptyState.classList.remove('hidden');
+            if (document.querySelector('.results-tabs')) document.querySelector('.results-tabs').classList.add('hidden');
+            document.getElementById('bibtexView')?.classList.add('hidden');
+            document.getElementById('rawView')?.classList.add('hidden');
+            document.getElementById('previewView')?.classList.add('hidden');
+            document.getElementById('similarPapersSection')?.classList.add('hidden');
+            elements.bibtexOutput.textContent = '% Your generated citations will appear here\n% Enter papers on the left and click Generate';
+            updateStats();
             showToast('Cleared all inputs', 'info');
         }
     } else {
@@ -1367,6 +1411,39 @@ function undoInput() {
         showToast('Nothing to undo', 'warning');
         elements.undoBtn.disabled = true;
     }
+}
+
+function updateBibtexDisplayForFormat(format) {
+    if (state.results.length === 0 || state.results.every(r => r.bibtex.startsWith('%'))) return;
+
+    let text;
+    if (format === 'bibtex') {
+        displayResults();
+        return;
+    } else if (format === 'ris') {
+        text = convertToRIS(state.results);
+    } else if (format === 'plain') {
+        text = convertToPlainText(state.results);
+    } else {
+        text = convertToCitationStyle(state.results.map(r => r.raw), format);
+    }
+
+    const emptyState = document.getElementById('resultsEmptyState');
+    if (emptyState) emptyState.classList.add('hidden');
+    const bibtexView = document.getElementById('bibtexView');
+    if (bibtexView) {
+        bibtexView.classList.remove('hidden');
+        bibtexView.classList.add('active');
+    }
+    document.getElementById('rawView')?.classList.remove('active');
+    document.getElementById('previewView')?.classList.remove('active');
+    const tabsEl = document.querySelector('.results-tabs');
+    if (tabsEl) tabsEl.classList.remove('hidden');
+    document.querySelectorAll('.results-tab-btn').forEach(b => b.classList.remove('active'));
+    const bibtexTab = document.querySelector('.results-tab-btn[data-view="bibtex"]');
+    if (bibtexTab) bibtexTab.classList.add('active');
+
+    elements.bibtexOutput.textContent = text;
 }
 
 function copyToClipboard() {
@@ -1988,6 +2065,9 @@ function initQRPayment() {
     const closeQRBtn = document.getElementById('closeQR');
     const enlargeModal = document.getElementById('enlargeModal');
 
+    // Guard: exit if critical elements missing
+    if (!qrModal || !donateBtn) return;
+
     // Mobile detection and optimization
     function isMobileDevice() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -2197,20 +2277,19 @@ function initQRPayment() {
         });
     });
 
-    // Close enlargement modal
-    document.getElementById('closeEnlarge')?.addEventListener('click', () => {
-        enlargeModal.classList.add('hidden');
-    });
+    // Close enlargement modal — enlargeModal not in DOM, guard everything
+    if (enlargeModal) {
+        const closeEnlargeBtn = document.getElementById('closeEnlarge');
+        if (closeEnlargeBtn) closeEnlargeBtn.addEventListener('click', () => enlargeModal.classList.add('hidden'));
+        const closeEnlargeBottom = document.getElementById('closeEnlargeBottom');
+        if (closeEnlargeBottom) closeEnlargeBottom.addEventListener('click', () => enlargeModal.classList.add('hidden'));
 
-    document.getElementById('closeEnlargeBottom')?.addEventListener('click', () => {
-        enlargeModal.classList.add('hidden');
-    });
-
-    enlargeModal.addEventListener('click', (e) => {
-        if (e.target === enlargeModal) {
-            enlargeModal.classList.add('hidden');
-        }
-    });
+        enlargeModal.addEventListener('click', (e) => {
+            if (e.target === enlargeModal) {
+                enlargeModal.classList.add('hidden');
+            }
+        });
+    }
 
     // Save QR code
     document.getElementById('saveQR')?.addEventListener('click', () => {
@@ -2245,10 +2324,7 @@ function initQRPayment() {
 
 // Initialize when DOM loads
 document.addEventListener('DOMContentLoaded', () => {
-    const qrPayment = initQRPayment();
-
-    // Make available globally if needed
-    window.qrPayment = qrPayment;
+    if (typeof initQRPayment === 'function') initQRPayment();
 });
 
 // ===========================
@@ -2379,9 +2455,50 @@ function getAlreadyFetchedDOIs() {
 async function fetchAndShowSimilarPapers() {
     const section = document.getElementById('similarPapersSection');
     const list = document.getElementById('similarPapersList');
+    const body = document.getElementById('similarBody');
+    const chevron = document.getElementById('similarChevron');
+    const toggle = document.getElementById('similarToggle');
+    const countEl = document.getElementById('similarCount');
+    const hint = document.querySelector('.toggle-hint');
+
     if (!section || !list) return;
 
     section.classList.remove('hidden');
+
+    // Remember expanded state before re-wiring
+    const wasExpanded = body && body.classList.contains('expanded');
+
+    // Wire up collapsible toggle
+    if (toggle && body && chevron) {
+        const expand = () => {
+            body.classList.add('expanded');
+            chevron.classList.add('open');
+            if (hint) hint.textContent = 'Click to collapse';
+            // Collapse bibtex results-content to give suggestions room
+            const resultsContent = document.querySelector('.results-content');
+            if (resultsContent) {
+                resultsContent.style.transition = 'max-height 0.35s ease';
+                resultsContent.style.maxHeight = '180px';
+            }
+        };
+        const collapse = () => {
+            body.classList.remove('expanded');
+            chevron.classList.remove('open');
+            if (hint) hint.textContent = 'Click to expand';
+            // Restore bibtex results-content height
+            const resultsContent = document.querySelector('.results-content');
+            if (resultsContent) {
+                resultsContent.style.transition = 'max-height 0.35s ease';
+                resultsContent.style.maxHeight = '';
+            }
+        };
+        toggle.onclick = () => {
+            body.classList.contains('expanded') ? collapse() : expand();
+        };
+        // Preserve expanded state across refreshes; default collapsed on first load
+        if (wasExpanded) expand(); else collapse();
+    }
+
     list.innerHTML = `
         <div class="similar-loading">
             <i class="fas fa-spinner fa-spin"></i>
@@ -2457,6 +2574,8 @@ async function fetchAndShowSimilarPapers() {
 function renderSimilarPapers(papers) {
     const list = document.getElementById('similarPapersList');
     const countBadge = document.getElementById('similarCount');
+    // Update the toggle count badge
+    if (countBadge) countBadge.textContent = papers.length;
     const addBtn = document.getElementById('addSelectedSuggestions');
 
     if (papers.length === 0) {
@@ -2921,11 +3040,13 @@ function setupEventListeners() {
         }
     });
 
-    // Export format change
+    // Export format change — live-update BibTeX display & button labels
     elements.exportFormat.addEventListener('change', () => {
         const format = elements.exportFormat.value;
         elements.copyBtn.innerHTML = `<i class="fas fa-copy"></i> Copy as ${format.toUpperCase()}`;
         elements.downloadBtn.innerHTML = `<i class="fas fa-download"></i> Download ${format}`;
+        // Live-update the BibTeX textarea to show the user what will be copied/downloaded
+        updateBibtexDisplayForFormat(format);
     });
 
     // Results view tabs
@@ -2986,14 +3107,19 @@ function setupEventListeners() {
     elements.darkModeToggle.addEventListener('click', toggleDarkMode);
     elements.darkModeToggleFloating.addEventListener('click', toggleDarkMode);
 
-    // Keyboard help
-    elements.showKeyboardHelp.addEventListener('click', () => {
-        elements.keyboardHelp.classList.toggle('hidden');
-    });
+    // Keyboard help — use keyboardShortcutsLink (showKeyboardHelp doesn't exist in DOM)
+    if (elements.keyboardShortcutsLink) {
+        elements.keyboardShortcutsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            elements.keyboardHelp.classList.remove('hidden');
+        });
+    }
 
-    elements.closeKeyboardHelp.addEventListener('click', () => {
-        elements.keyboardHelp.classList.add('hidden');
-    });
+    if (elements.closeKeyboardHelp) {
+        elements.closeKeyboardHelp.addEventListener('click', () => {
+            elements.keyboardHelp.classList.add('hidden');
+        });
+    }
 
     elements.keyboardShortcutsLink.addEventListener('click', (e) => {
         e.preventDefault();
@@ -3028,7 +3154,7 @@ function setupEventListeners() {
         const navLinks = document.querySelector('.nav-links');
         const menuToggle = elements.menuToggle;
 
-        if (navLinks.classList.contains('show') &&
+        if (navLinks && menuToggle && navLinks.classList.contains('show') &&
             !navLinks.contains(e.target) &&
             !menuToggle.contains(e.target)) {
             navLinks.classList.remove('show');
@@ -3102,6 +3228,8 @@ function setupEventListeners() {
         elements.cancelBtn.classList.add('hidden');
         elements.generateBtn.classList.remove('hidden');
         elements.progressContainer.classList.add('hidden');
+        const ipEl2 = document.querySelector('.input-panel');
+        if (ipEl2) ipEl2.classList.remove('processing');
         showToast('Processing cancelled', 'warning');
     });
 
@@ -3216,6 +3344,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial UI update
     updatePaperCount();
     updateOnlineStatus();
+
+    // Initial empty state: show empty state, hide results views + tabs
+    const bibtexView = document.getElementById('bibtexView');
+    const rawView = document.getElementById('rawView');
+    const previewView = document.getElementById('previewView');
+    const resultsTabs = document.querySelector('.results-tabs');
+    if (bibtexView) bibtexView.classList.add('hidden');
+    if (rawView) rawView.classList.add('hidden');
+    if (previewView) previewView.classList.add('hidden');
+    if (resultsTabs) resultsTabs.classList.add('hidden');
 
     // Track app launch
     trackEvent('app_launch');

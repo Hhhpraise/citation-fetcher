@@ -104,7 +104,7 @@
         <!-- Left: Input panel -->
         <section class="input-panel">
             <div class="panel-header">
-                <h2><i class="fas fa-pencil-alt"></i> Input</h2>
+                <span class="panel-label"><i class="fas fa-pencil-alt"></i> Input</span>
                 <div class="input-type-selector">
                     <button class="type-chip active" data-type="titles">Titles</button>
                     <button class="type-chip" data-type="doi">DOIs</button>
@@ -189,7 +189,7 @@ Examples:
         <!-- Right: Results panel -->
         <section class="results-panel">
             <div class="panel-header">
-                <h2><i class="fas fa-file-code"></i> Results</h2>
+                <span class="panel-label"><i class="fas fa-file-code"></i> Results</span>
                 <div class="results-controls">
                     <select id="exportFormat">
                         <option value="bibtex">BibTeX</option>
@@ -249,7 +249,7 @@ Examples:
             </div>
 
             <!-- Results content -->
-            <div class="results-tabs">
+            <div class="results-tabs hidden">
                 <button class="results-tab-btn active" data-view="bibtex">
                     <i class="fas fa-code"></i> BibTeX
                 </button>
@@ -261,8 +261,18 @@ Examples:
                 </button>
             </div>
 
+            <!-- Empty state (visible when no results) -->
+            <div class="results-empty-state" id="resultsEmptyState">
+                <div class="empty-icon"><i class="fas fa-arrow-left"></i></div>
+                <div class="empty-title">No citations yet</div>
+                <div class="empty-desc">Enter paper titles, DOIs, or arXiv IDs on the left, then click Generate to fetch formatted citations.</div>
+                <button class="empty-action" onclick="document.getElementById('paperInput').focus()">
+                    <i class="fas fa-pencil-alt"></i> Start typing in the input panel
+                </button>
+            </div>
+
             <div class="results-content">
-                <div class="result-view active" id="bibtexView">
+                <div class="result-view" id="bibtexView">
                     <pre id="bibtexOutput">% Your generated citations will appear here
 % Enter papers on the left and click Generate</pre>
                 </div>
@@ -278,20 +288,26 @@ Examples:
 
             <!-- Similar Papers -->
             <div class="similar-papers-section hidden" id="similarPapersSection">
-                <div class="similar-papers-header">
-                    <div class="similar-papers-title">
+                <button class="similar-toggle" id="similarToggle" type="button">
+                    <span class="toggle-left">
                         <i class="fas fa-lightbulb"></i>
-                        <h4>Related Papers</h4>
-                        <span class="similar-badge" id="similarCount">0 found</span>
-                    </div>
+                        <span>Related Papers</span>
+                        <span class="toggle-count" id="similarCount">0</span>
+                    </span>
+                    <span class="toggle-right">
+                        <span class="toggle-hint">Click to expand</span>
+                        <i class="fas fa-chevron-down toggle-chevron" id="similarChevron"></i>
+                    </span>
+                </button>
+                <div class="similar-body" id="similarBody">
                     <div class="similar-controls">
                         <button class="btn-small" id="selectAllSuggestions"><i class="fas fa-check-square"></i> Select All</button>
                         <button class="btn-small btn-outline-sm" id="deselectAllSuggestions"><i class="fas fa-square"></i> Deselect</button>
                         <button class="btn-small btn-outline-sm" id="refreshSuggestions"><i class="fas fa-sync-alt"></i> Refresh</button>
                         <button class="btn-secondary" id="addSelectedSuggestions" disabled><i class="fas fa-plus"></i> Add to Queue</button>
                     </div>
+                    <div class="similar-papers-list" id="similarPapersList"></div>
                 </div>
-                <div class="similar-papers-list" id="similarPapersList"></div>
             </div>
 
             <!-- Share panel -->
@@ -438,38 +454,51 @@ Examples:
     <!-- Features Section -->
     <section class="features" id="features">
         <div class="container">
-            <h2 class="section-title">Why Use Citation Fetcher?</h2>
-            <p class="section-subtitle">Everything you need to generate perfect BibTeX citations in seconds.</p>
-            <div class="features-grid">
-                <div class="feature-card">
+            <div class="section-label">Capabilities</div>
+            <h2 class="section-title">Research-grade citations,<br>zero friction</h2>
+            <p class="section-subtitle">Built for researchers who need accurate BibTeX, fast. No accounts, no servers, no compromises.</p>
+            <div class="features-list">
+                <div class="feature-row">
                     <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                    <h3>Smart Automation</h3>
-                    <p>Automatically fetches complete citation data including authors, year, journal, and DOI.</p>
+                    <div class="feature-body">
+                        <h3>Smart Automation</h3>
+                        <p>Auto-fetches complete citation data — authors, year, journal, DOI — across three academic APIs with automatic failover.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-exchange-alt"></i></div>
-                    <h3>Multiple APIs</h3>
-                    <p>Uses Crossref, ArXiv, and Semantic Scholar APIs for maximum coverage.</p>
+                <div class="feature-row">
+                    <div class="feature-icon"><i class="fas fa-layer-group"></i></div>
+                    <div class="feature-body">
+                        <h3>Multi-Source Reliability</h3>
+                        <p>Crossref for accuracy, arXiv for preprints, Semantic Scholar for breadth. Each paper tries all three sources before giving up.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-globe"></i></div>
-                    <h3>Unicode Support</h3>
-                    <p>Handles international characters and special symbols in paper titles.</p>
+                <div class="feature-row">
+                    <div class="feature-icon"><i class="fas fa-language"></i></div>
+                    <div class="feature-body">
+                        <h3>Unicode & International</h3>
+                        <p>Handles special characters, diacritics, and non-Latin scripts in paper titles and author names without corruption.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h3>Privacy First</h3>
-                    <p>All processing happens in your browser. No data is sent to our servers.</p>
+                <div class="feature-row">
+                    <div class="feature-icon"><i class="fas fa-shield"></i></div>
+                    <div class="feature-body">
+                        <h3>Privacy First</h3>
+                        <p>Everything runs in your browser. No paper titles, citations, or usage data ever reaches our servers. Local storage only.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
-                    <h3>Batch Processing</h3>
-                    <p>Process hundreds of papers at once with automatic rate limiting.</p>
+                <div class="feature-row">
+                    <div class="feature-icon"><i class="fas fa-server"></i></div>
+                    <div class="feature-body">
+                        <h3>Batch Processing</h3>
+                        <p>Process hundreds of papers in one go with automatic rate-limiting and smart retry for failed lookups.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fas fa-history"></i></div>
-                    <h3>Citation History</h3>
-                    <p>Save and manage your citation history for future reference.</p>
+                <div class="feature-row">
+                    <div class="feature-icon"><i class="fas fa-clock-rotate-left"></i></div>
+                    <div class="feature-body">
+                        <h3>Citation History</h3>
+                        <p>Every citation you generate is saved locally. Search, filter by source, organize into folders, and export anytime.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -478,29 +507,24 @@ Examples:
     <!-- How To Section -->
     <section class="how-to" id="how-to">
         <div class="container">
-            <h2 class="section-title">How To Use</h2>
-            <p class="section-subtitle">Three simple steps from paper titles to ready-to-use BibTeX.</p>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Enter Your Papers</h3>
-                        <p>Paste paper titles, DOIs, or arXiv IDs in the input panel. Upload a file or drag and drop.</p>
-                    </div>
+            <div class="section-label">Workflow</div>
+            <h2 class="section-title">Three steps to BibTeX</h2>
+            <p class="section-subtitle">From paper titles to formatted citations in under a minute.</p>
+            <div class="steps-timeline">
+                <div class="step-horizontal">
+                    <div class="step-circle">1</div>
+                    <h3>Enter Papers</h3>
+                    <p>Paste titles, DOIs, or arXiv IDs — or drag a .bib/.txt file.</p>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Generate Citations</h3>
-                        <p>Click Generate and watch as citations are fetched from Crossref, ArXiv, and Semantic Scholar.</p>
-                    </div>
+                <div class="step-horizontal">
+                    <div class="step-circle">2</div>
+                    <h3>Generate</h3>
+                    <p>One click fetches citations from Crossref, arXiv, and Semantic Scholar.</p>
                 </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Copy & Export</h3>
-                        <p>Copy to clipboard, download as BibTeX/RIS/APA/MLA, or share with a link.</p>
-                    </div>
+                <div class="step-horizontal">
+                    <div class="step-circle">3</div>
+                    <h3>Export</h3>
+                    <p>Copy, download as BibTeX/RIS/APA/MLA, or share via link.</p>
                 </div>
             </div>
         </div>
@@ -509,8 +533,9 @@ Examples:
     <!-- Bookmarklet Section -->
     <section class="bookmarklet" id="bookmarklet">
         <div class="container">
-            <h2 class="section-title">Browser Bookmarklet</h2>
-            <p class="section-subtitle">Drag this button to your bookmarks bar. Click it on any journal page, arXiv abstract, or paper URL to instantly open Citation Fetcher with the paper pre-filled.</p>
+            <div class="section-label">Browser Integration</div>
+            <h2 class="section-title">One-click from any paper</h2>
+            <p class="section-subtitle">Drag the button to your bookmarks bar. When you're on a journal page or arXiv abstract, click it to jump straight into Citation Fetcher with the paper pre-filled.</p>
             <div class="bookmarklet-card">
                 <a class="bookmarklet-btn" href="javascript:(function(){function g(s){var e=document.querySelector(s);return e?e.content||e.getAttribute('value')||'':'';}var doi=g('meta[name=&quot;citation_doi&quot;]')||g('meta[name=&quot;dc.identifier&quot;]')||g('meta[name=&quot;DC.identifier&quot;]')||g('meta[name=&quot;prism.doi&quot;]')||'';if(!doi){var u=window.location.href;var m=u.match(/10\.\d{4,9}\/[-._;()\/:A-Z0-9]+/i);if(m)doi=m[0];}var title=g('meta[name=&quot;citation_title&quot;]')||g('meta[property=&quot;og:title&quot;]')||document.title||'';var arxiv='';var a=window.location.href.match(/arxiv\.org\/abs\/(\d+\.\d+)/i);if(a)arxiv=a[1];var q=doi||arxiv||title||window.location.href;window.open('https://hhhpraise.github.io/citation-fetcher/#'+encodeURIComponent(q));})();" onclick="event.preventDefault();showToast('Drag this button to your bookmarks bar!','info',6000);">
                     <i class="fas fa-graduation-cap"></i> Cite This!
@@ -527,47 +552,72 @@ Examples:
     <!-- API Info Section -->
     <section class="api-info" id="api">
         <div class="container">
-            <h2 class="section-title">Powered By Academic APIs</h2>
-            <p class="section-subtitle">Trusted academic data sources for accurate citations.</p>
-            <div class="api-cards">
-                <div class="api-card crossref">
-                    <div class="api-header">
-                        <i class="fas fa-book"></i>
+            <div class="section-label">Data Sources</div>
+            <h2 class="section-title">Academic APIs,<br>working together</h2>
+            <p class="section-subtitle">Three trusted sources, automatically queried in your preferred order.</p>
+            <div class="api-cards-list">
+                <div class="api-card-wide crossref">
+                    <div class="api-icon"><i class="fas fa-book"></i></div>
+                    <div class="api-main">
                         <h3>Crossref API</h3>
-                        <span class="api-badge">Primary</span>
+                        <p>High-quality metadata from thousands of academic publishers. Most accurate citation data available.</p>
+                        <div class="api-features">
+                            <span><i class="fas fa-check"></i> DOI-linked citations</span>
+                            <span><i class="fas fa-check"></i> Structured BibTeX</span>
+                            <span><i class="fas fa-check"></i> Publisher metadata</span>
+                        </div>
                     </div>
-                    <p>High-quality metadata from thousands of academic publishers.</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Most accurate citation data</li>
-                        <li><i class="fas fa-check"></i> Includes DOI links</li>
-                        <li><i class="fas fa-check"></i> Structured BibTeX output</li>
-                    </ul>
-                </div>
-                <div class="api-card arxiv">
-                    <div class="api-header">
-                        <i class="fas fa-atom"></i>
-                        <h3>ArXiv API</h3>
-                        <span class="api-badge">Fallback</span>
+                    <div class="api-metric">
+                        <div class="api-metric-value">50M+</div>
+                        <div class="api-metric-label">Articles Indexed</div>
                     </div>
-                    <p>Open access to preprints in physics, mathematics, computer science, and more.</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> Free and open access</li>
-                        <li><i class="fas fa-check"></i> Great for recent papers</li>
-                        <li><i class="fas fa-check"></i> No rate limits</li>
-                    </ul>
+                    <div class="api-metric">
+                        <div class="api-metric-value">99.9%</div>
+                        <div class="api-metric-label">Uptime</div>
+                    </div>
+                    <span class="api-badge-tag">Primary</span>
                 </div>
-                <div class="api-card semantic">
-                    <div class="api-header">
-                        <i class="fas fa-brain"></i>
+                <div class="api-card-wide arxiv">
+                    <div class="api-icon"><i class="fas fa-atom"></i></div>
+                    <div class="api-main">
+                        <h3>arXiv API</h3>
+                        <p>Open-access preprints in physics, math, computer science, and related fields. Free with no rate limits.</p>
+                        <div class="api-features">
+                            <span><i class="fas fa-check"></i> Free &amp; open access</span>
+                            <span><i class="fas fa-check"></i> Great for preprints</span>
+                            <span><i class="fas fa-check"></i> No rate limits</span>
+                        </div>
+                    </div>
+                    <div class="api-metric">
+                        <div class="api-metric-value">2.4M+</div>
+                        <div class="api-metric-label">Preprints</div>
+                    </div>
+                    <div class="api-metric">
+                        <div class="api-metric-value">Open</div>
+                        <div class="api-metric-label">Access</div>
+                    </div>
+                    <span class="api-badge-tag">Fallback</span>
+                </div>
+                <div class="api-card-wide semantic">
+                    <div class="api-icon"><i class="fas fa-brain"></i></div>
+                    <div class="api-main">
                         <h3>Semantic Scholar</h3>
-                        <span class="api-badge">Alternative</span>
+                        <p>AI-powered academic search with comprehensive coverage, citation graphs, and related paper recommendations.</p>
+                        <div class="api-features">
+                            <span><i class="fas fa-check"></i> AI recommendations</span>
+                            <span><i class="fas fa-check"></i> Citation graphs</span>
+                            <span><i class="fas fa-check"></i> Abstract analysis</span>
+                        </div>
                     </div>
-                    <p>AI-powered academic search engine with comprehensive coverage.</p>
-                    <ul>
-                        <li><i class="fas fa-check"></i> AI-powered recommendations</li>
-                        <li><i class="fas fa-check"></i> Citation graphs</li>
-                        <li><i class="fas fa-check"></i> Abstract analysis</li>
-                    </ul>
+                    <div class="api-metric">
+                        <div class="api-metric-value">200M+</div>
+                        <div class="api-metric-label">Papers Tracked</div>
+                    </div>
+                    <div class="api-metric">
+                        <div class="api-metric-value">2.5B+</div>
+                        <div class="api-metric-label">Citations</div>
+                    </div>
+                    <span class="api-badge-tag">Alternative</span>
                 </div>
             </div>
         </div>
@@ -576,58 +626,54 @@ Examples:
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <i class="fas fa-graduation-cap"></i>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <i class="fas fa-graduation-cap" style="font-size:1.4rem;color:var(--warm)"></i>
                     <h2>Citation<span>Fetcher</span></h2>
-                    <p>Free tool for academic researchers</p>
-                    <div class="app-version">
+                    <p class="footer-desc">A free, open-source citation generator for researchers. No accounts, no tracking — just accurate BibTeX.</p>
+                    <div class="footer-meta">
                         <span id="appVersion">v2.1</span>
                         <span class="offline-status" id="offlineStatus"><i class="fas fa-wifi"></i> Online</span>
                     </div>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-column">
-                        <h4>Tool</h4>
-                        <a href="#main-content">Generator</a>
-                        <a href="#features">Features</a>
-                        <a href="#how-to">How To</a>
-                        <a href="#bookmarklet">Bookmarklet</a>
-                        <a href="#api">APIs</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Resources</h4>
-                        <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank">GitHub</a>
-                        <a href="https://github.com/hhhpraise/citation-fetcher/issues" target="_blank">Report Issues</a>
-                        <a href="#" id="privacyLink">Privacy Policy</a>
-                        <a href="#" id="keyboardShortcutsLink">Keyboard Shortcuts</a>
-                    </div>
-                    <div class="footer-column">
-                        <h4>Connect</h4>
-                        <a href="https://hhhpraise.github.io/portfolio/" target="_blank"><i class="fas fa-user-circle"></i> Portfolio</a>
-                        <a href="https://twitter.com/ArowoloPraise" target="_blank"><i class="fab fa-twitter"></i> Twitter</a>
-                        <a href="https://github.com/hhhpraise" target="_blank"><i class="fab fa-github"></i> GitHub</a>
-                    </div>
+                <div class="footer-col">
+                    <h4>Tool</h4>
+                    <a href="#main-content">Generator</a>
+                    <a href="#features">Features</a>
+                    <a href="#how-to">How To</a>
+                    <a href="#bookmarklet">Bookmarklet</a>
+                    <a href="#api">APIs</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <a href="https://github.com/hhhpraise/citation-fetcher" target="_blank">GitHub</a>
+                    <a href="https://github.com/hhhpraise/citation-fetcher/issues" target="_blank">Report Issues</a>
+                    <a href="#" id="privacyLink">Privacy Policy</a>
+                    <a href="#" id="keyboardShortcutsLink">Keyboard Shortcuts</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <a href="https://hhhpraise.github.io/portfolio/" target="_blank"><i class="fas fa-user-circle"></i> Portfolio</a>
+                    <a href="https://twitter.com/ArowoloPraise" target="_blank"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="https://github.com/hhhpraise" target="_blank"><i class="fab fa-github"></i> GitHub</a>
                 </div>
             </div>
 
-            <div class="developer-section">
-                <div class="developer-card">
-                    <div class="developer-avatar">
-                        <img src="https://github.com/Hhhpraise.png" alt="hhhpraise" width="60" height="60">
-                    </div>
-                    <div class="developer-info">
-                        <h4>Meet the Developer</h4>
-                        <p>Created by <strong>Hhhpraise</strong>, a passionate developer and researcher</p>
-                        <div class="developer-links">
-                            <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="btn-portfolio"><i class="fas fa-external-link-alt"></i> View Portfolio</a>
-                            <button class="btn-outline" id="donateBtn"><i class="fas fa-coffee"></i> Buy me a coffee</button>
-                        </div>
-                    </div>
+            <hr class="footer-divider">
+
+            <div class="footer-developer">
+                <img src="https://github.com/Hhhpraise.png" alt="hhhpraise" width="52" height="52">
+                <div class="dev-info">
+                    <h4>Built by Hhhpraise</h4>
+                    <p>Developer & researcher. Open source, always.</p>
+                </div>
+                <div class="dev-links">
+                    <a href="https://hhhpraise.github.io/portfolio/" target="_blank" class="btn-portfolio"><i class="fas fa-external-link-alt"></i> Portfolio</a>
+                    <button class="btn-outline" id="donateBtn"><i class="fas fa-coffee"></i> Buy me a coffee</button>
                 </div>
             </div>
 
-            <div class="newsletter-section">
+            <div class="newsletter-box">
                 <h4><i class="fas fa-newspaper"></i> Stay Updated</h4>
                 <p>Get tips, updates, and new features in your inbox</p>
                 <form id="newsletterForm">
